@@ -113,15 +113,15 @@
 
                 <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to List
+                        <i class="bi bi-arrow-left"></i> Back to List
                     </a>
                     <div>
                         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="bi bi-pencil"></i> Edit
                         </a>
                         <div class="btn-group me-2" role="group">
                             <button type="button" class="btn btn-outline-info dropdown-toggle" data-bs-toggle="dropdown">
-                                <i class="fas fa-boxes"></i> Manage Stock
+                                <i class="bi bi-boxes"></i> Manage Stock
                             </button>
                             <ul class="dropdown-menu">
                                 <li>
@@ -129,7 +129,7 @@
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="quantity" value="10" />
                                         <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-plus text-success"></i> Add 10 units
+                                            <i class="bi bi-plus-circle text-success"></i> Add 10 units
                                         </button>
                                     </form>
                                 </li>
@@ -138,7 +138,7 @@
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="quantity" value="5" />
                                         <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-plus text-success"></i> Add 5 units
+                                            <i class="bi bi-plus-circle text-success"></i> Add 5 units
                                         </button>
                                     </form>
                                 </li>
@@ -149,7 +149,7 @@
                                         <input type="hidden" name="quantity" value="-5" />
                                         <button type="submit" class="dropdown-item" 
                                                 onclick="return confirm('Are you sure you want to remove 5 units?')">
-                                            <i class="fas fa-minus text-warning"></i> Remove 5 units
+                                            <i class="bi bi-dash-circle text-warning"></i> Remove 5 units
                                         </button>
                                     </form>
                                 </li>
@@ -159,14 +159,14 @@
                                         <input type="hidden" name="quantity" value="-10" />
                                         <button type="submit" class="dropdown-item" 
                                                 onclick="return confirm('Are you sure you want to remove 10 units?')">
-                                            <i class="fas fa-minus text-warning"></i> Remove 10 units
+                                            <i class="bi bi-dash-circle text-warning"></i> Remove 10 units
                                         </button>
                                     </form>
                                 </li>
                             </ul>
                         </div>
                         <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Delete
+                            <i class="bi bi-trash"></i> Delete
                         </a>
                     </div>
                 </div>
@@ -176,5 +176,5 @@
 </div>
 
 @section Scripts {
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
 }

@@ -112,11 +112,11 @@
 
                 <div class="d-flex justify-content-between mt-4">
                     <a asp-action="Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to List
+                        <i class="bi bi-arrow-left"></i> Back to List
                     </a>
                     <div>
                         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">
-                            <i class="fas fa-edit"></i> Edit
+                            <i class="bi bi-pencil"></i> Edit
                         </a>
                         @if (Model.IsActive)
                         {
@@ -124,7 +124,7 @@
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-outline-secondary me-2" 
                                         onclick="return confirm('Are you sure you want to deactivate this user?')">
-                                    <i class="fas fa-pause"></i> Deactivate
+                                    <i class="bi bi-pause-circle"></i> Deactivate
                                 </button>
                             </form>
                         }
@@ -133,12 +133,12 @@
                             <form asp-action="Activate" asp-route-id="@Model.Id" method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <button type="submit" class="btn btn-success me-2">
-                                    <i class="fas fa-play"></i> Activate
+                                    <i class="bi bi-play-circle"></i> Activate
                                 </button>
                             </form>
                         }
                         <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Delete
+                            <i class="bi bi-trash"></i> Delete
                         </a>
                     </div>
                 </div>
@@ -148,5 +148,5 @@
 </div>
 
 @section Scripts {
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+
 }
