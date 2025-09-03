@@ -1,6 +1,7 @@
+---
+applyTo: '**'
+---
 # Copilot Instructions for Clean Architecture Project
-
-<!-- Use this file to provide workspace-specific custom instructions to Copilot. For more details, visit https://code.visualstudio.com/docs/copilot/copilot-customization#_use-a-githubcopilotinstructionsmd-file -->
 
 ## Project Overview
 This is an ASP.NET Core MVC application following Clean Architecture and Domain-Driven Design principles.
@@ -81,3 +82,4 @@ This is an ASP.NET Core MVC application following Clean Architecture and Domain-
 6. Configure dependency injection
 7. Add appropriate validation
 8. Include error handling and logging
+
