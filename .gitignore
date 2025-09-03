@@ -1,0 +1,56 @@
+# ------------------------------------------------------------------------------
+# .gitignore file for ASP.NET Core MVC Clean Architecture project
+# ------------------------------------------------------------------------------
+
+## Build and output directories
+**/[Bb]in/
+**/[Oo]bj/
+**/[Oo]ut/
+**/publish/
+
+## Visual Studio related
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.csproj.user
+*.dbmdl
+
+## Rider
+.idea/
+
+## Visual Studio Code
+.vscode/
+
+## User secrets
+**/secrets.json
+
+## NuGet
+*.nupkg
+*.snupkg
+**/packages/
+!**/packages/build/
+# NuGet v3
+project.lock.json
+project.assets.json
+
+## Entity Framework Migrations
+**/Migrations/
+
+## Logs
+*.log
+
+## Coverage & Test Results
+*.coverage
+*.coveragexml
+TestResults/
+
+## OS generated files
+.DS_Store
+Thumbs.db
+
+## Others
+*.tmp
+*~
+*.userprefs
