@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using CleanArchitecture.Domain.Common;
-using CleanArchitecture.Domain.Events;
 
 namespace CleanArchitecture.Domain.Entities;
 
-public class User : AggregateRoot
+public class User : BaseEntity
 {
     [Required]
     [MaxLength(100)]
@@ -51,7 +50,6 @@ public class User : AggregateRoot
         if (!IsActive)
         {
             IsActive = true;
-            AddDomainEvent(new UserActivatedEvent(Id));
         }
     }
     
@@ -60,7 +58,6 @@ public class User : AggregateRoot
         if (IsActive)
         {
             IsActive = false;
-            AddDomainEvent(new UserDeactivatedEvent(Id));
         }
     }
 }
