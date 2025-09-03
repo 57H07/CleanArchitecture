@@ -43,15 +43,16 @@ public class UserRepository : IUserRepository
             .ToListAsync();
     }
 
-    public async Task<User> AddAsync(User user)
+    public Task<User> AddAsync(User user)
     {
         _context.Users.Add(user);
-        return user;
+        return Task.FromResult(user);
     }
 
-    public async Task UpdateAsync(User user)
+    public Task UpdateAsync(User user)
     {
         _context.Entry(user).State = EntityState.Modified;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(int id)

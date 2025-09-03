@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using CleanArchitecture.Domain.Common;
+using CleanArchitecture.Domain.Exceptions;
 
 namespace CleanArchitecture.Domain.Entities;
 
@@ -37,7 +38,7 @@ public class Product : BaseEntity
     public void UpdateStock(int quantity)
     {
         if (StockQuantity + quantity < 0)
-            throw new InvalidOperationException("Insufficient stock");
+            throw new InsufficientStockException();
             
         StockQuantity += quantity;
     }
@@ -45,7 +46,7 @@ public class Product : BaseEntity
     public void SetPrice(decimal newPrice)
     {
         if (newPrice <= 0)
-            throw new ArgumentException("Price must be greater than zero", nameof(newPrice));
+            throw new InvalidPriceException();
             
         Price = newPrice;
     }

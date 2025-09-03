@@ -52,15 +52,16 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
-    public async Task<Product> AddAsync(Product product)
+    public Task<Product> AddAsync(Product product)
     {
         _context.Products.Add(product);
-        return product;
+        return Task.FromResult(product);
     }
 
-    public async Task UpdateAsync(Product product)
+    public Task UpdateAsync(Product product)
     {
         _context.Entry(product).State = EntityState.Modified;
+        return Task.CompletedTask;
     }
 
     public async Task DeleteAsync(int id)

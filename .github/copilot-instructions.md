@@ -49,7 +49,7 @@ This is an ASP.NET Core MVC application following Clean Architecture and Domain-
 #### Views
 - Use Bootstrap 5 for styling
 - Implement responsive design
-- Include Font Awesome icons
+- Include Bootstrap icons
 - Use Razor syntax efficiently
 - Implement proper form validation
 

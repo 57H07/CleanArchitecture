@@ -142,7 +142,7 @@ The application includes seeded data:
 
 ### UI/UX Features
 - **Responsive Design**: Mobile-first Bootstrap 5
-- **Icon Integration**: Font Awesome icons
+- **Icon Integration**: Bootstrap icons
 - **Success/Error Messages**: Toast-style notifications
 - **Confirmation Dialogs**: JavaScript confirmations
 - **Data Tables**: Sortable, responsive tables

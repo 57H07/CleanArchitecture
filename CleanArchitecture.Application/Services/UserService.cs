@@ -1,5 +1,6 @@
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
 
@@ -42,7 +43,7 @@ public class UserService : IUserService
     {
         if (await _unitOfWork.Users.EmailExistsAsync(createUserDto.Email))
         {
-            throw new InvalidOperationException("A user with this email already exists.");
+            throw new DuplicateEntityException("User", "email", createUserDto.Email);
         }
 
         var user = createUserDto.Adapt<User>();
