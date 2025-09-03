@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CleanArchitecture.Domain.Enums;
 
 namespace CleanArchitecture.Application.DTOs;
 
@@ -20,6 +21,9 @@ public class CreateUserDto
     [Phone(ErrorMessage = "Invalid phone number format")]
     [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
     public string? PhoneNumber { get; set; }
+    
+    [Display(Name = "Role")]
+    public UserRole Role { get; set; } = UserRole.User;
     
     [Display(Name = "Date of Birth")]
     public DateTime? DateOfBirth { get; set; }

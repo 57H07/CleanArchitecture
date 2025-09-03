@@ -1,4 +1,5 @@
 using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,6 +28,11 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(e => e.Category)
             .HasMaxLength(100);
             
+        // Configure enum conversion
+        builder.Property(e => e.Status)
+            .HasConversion<string>()
+            .IsRequired();
+            
         builder.Property(e => e.CreatedAt)
             .IsRequired();
             
@@ -46,6 +52,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Price = 1299.99m,
                 StockQuantity = 50,
                 Category = "Electronics",
+                Status = ProductStatus.Active,
                 IsAvailable = true,
                 UserId = 1,
                 CreatedAt = DateTime.UtcNow,
@@ -59,6 +66,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Price = 29.99m,
                 StockQuantity = 100,
                 Category = "Electronics",
+                Status = ProductStatus.Active,
                 IsAvailable = true,
                 UserId = 1,
                 CreatedAt = DateTime.UtcNow,
@@ -72,6 +80,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Price = 249.99m,
                 StockQuantity = 25,
                 Category = "Furniture",
+                Status = ProductStatus.Draft,
                 IsAvailable = true,
                 UserId = 2,
                 CreatedAt = DateTime.UtcNow,

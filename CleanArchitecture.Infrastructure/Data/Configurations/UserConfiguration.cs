@@ -1,4 +1,5 @@
 using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -28,6 +29,11 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
         builder.Property(e => e.PhoneNumber)
             .HasMaxLength(20);
             
+        // Configure enum conversion
+        builder.Property(e => e.Role)
+            .HasConversion<string>()
+            .IsRequired();
+            
         builder.Property(e => e.CreatedAt)
             .IsRequired();
             
@@ -52,6 +58,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 LastName = "Doe",
                 Email = "john.doe@example.com",
                 PhoneNumber = "+1234567890",
+                Role = UserRole.Admin,
                 IsActive = true,
                 DateOfBirth = new DateTime(1990, 1, 15),
                 CreatedAt = DateTime.UtcNow,
@@ -64,6 +71,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
                 LastName = "Smith",
                 Email = "jane.smith@example.com",
                 PhoneNumber = "+1987654321",
+                Role = UserRole.User,
                 IsActive = true,
                 DateOfBirth = new DateTime(1985, 6, 20),
                 CreatedAt = DateTime.UtcNow,

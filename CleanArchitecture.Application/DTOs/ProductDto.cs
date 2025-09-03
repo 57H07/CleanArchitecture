@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using CleanArchitecture.Domain.Enums;
 
 namespace CleanArchitecture.Application.DTOs;
 
@@ -26,6 +27,10 @@ public class ProductDto
     
     [StringLength(100, ErrorMessage = "Category cannot exceed 100 characters")]
     public string? Category { get; set; }
+    
+    [Required(ErrorMessage = "Status is required")]
+    [Display(Name = "Status")]
+    public ProductStatus Status { get; set; }
     
     [Display(Name = "Available")]
     public bool IsAvailable { get; set; }
