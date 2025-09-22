@@ -3,6 +3,7 @@ using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
+using System.Text.RegularExpressions;
 
 namespace CleanArchitecture.Application.Services;
 
@@ -41,6 +42,12 @@ public class UserService : IUserService
 
     public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
     {
+        // Validate email format
+        if (string.IsNullOrWhiteSpace(createUserDto.Email) || !IsValidEmail(createUserDto.Email))
+        {
+            throw new ArgumentException("Invalid email format", nameof(createUserDto.Email));
+        }
+
         if (await _unitOfWork.Users.EmailExistsAsync(createUserDto.Email))
         {
             throw new DuplicateEntityException("User", "email", createUserDto.Email);
@@ -128,5 +135,14 @@ public class UserService : IUserService
     public async Task<bool> EmailExistsAsync(string email)
     {
         return await _unitOfWork.Users.EmailExistsAsync(email);
+    }
+
+    private static bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        const string emailPattern = @"^[^@\s]+@[^@\s]+\.[^@\s]+$";
+        return Regex.IsMatch(email, emailPattern);
     }
 }
