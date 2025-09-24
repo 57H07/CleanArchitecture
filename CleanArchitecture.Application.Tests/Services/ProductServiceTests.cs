@@ -1,10 +1,9 @@
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Application.Services;
+using CleanArchitecture.Application.Tests.Helpers;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Domain.Enums;
-using AutoFixture;
-using AutoFixture.Kernel;
 
 namespace CleanArchitecture.Application.Tests.Services;
 
@@ -14,19 +13,12 @@ public class ProductServiceTests
     private readonly Mock<IProductRepository> _mockProductRepository;
     private readonly Mock<IUserRepository> _mockUserRepository;
     private readonly ProductService _productService;
-    private readonly Fixture _fixture;
 
     public ProductServiceTests()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockProductRepository = new Mock<IProductRepository>();
         _mockUserRepository = new Mock<IUserRepository>();
-        _fixture = new Fixture();
-
-        // Configure AutoFixture to handle circular references
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         // Setup UnitOfWork to return mocked repositories
         _mockUnitOfWork.Setup(u => u.Products).Returns(_mockProductRepository.Object);
@@ -39,7 +31,7 @@ public class ProductServiceTests
     public async Task GetAllAsync_ShouldReturnAllProducts()
     {
         // Arrange
-        var products = _fixture.CreateMany<Product>(3).ToList();
+        var products = TestDataBuilder.CreateProductList(3);
         _mockProductRepository.Setup(r => r.GetAllAsync())
             .ReturnsAsync(products);
 
@@ -56,10 +48,7 @@ public class ProductServiceTests
     {
         // Arrange
         var productId = 1;
-        var product = _fixture.Build<Product>()
-            .With(p => p.Id, productId)
-            .With(p => p.Name, "Test Product")
-            .Create();
+        var product = TestDataBuilder.CreateValidProduct(productId);
         
         _mockProductRepository.Setup(r => r.GetByIdAsync(productId))
             .ReturnsAsync(product);
@@ -70,7 +59,8 @@ public class ProductServiceTests
         // Assert
         result.Should().NotBeNull();
         result!.Id.Should().Be(productId);
-        result.Name.Should().Be("Test Product");
+        result.Name.Should().Be("Test Product 1");
+        result.Price.Should().Be(99.99m);
     }
 
     [Fact]
@@ -92,17 +82,10 @@ public class ProductServiceTests
     public async Task CreateAsync_WhenUserExists_ShouldCreateProduct()
     {
         // Arrange
-        var createDto = _fixture.Build<CreateProductDto>()
-            .With(p => p.UserId, 1)
-            .With(p => p.Name, "New Product")
-            .With(p => p.Price, 99.99m)
-            .Create();
-
-        var user = _fixture.Build<User>().With(u => u.Id, 1).Create();
-        var createdProduct = _fixture.Build<Product>()
-            .With(p => p.Id, 1)
-            .With(p => p.Name, createDto.Name)
-            .Create();
+        var createDto = TestDataBuilder.CreateValidProductDto("New Product", 1);
+        var createdProduct = TestDataBuilder.CreateValidProduct(1, 1);
+        createdProduct.Name = createDto.Name;
+        createdProduct.Price = createDto.Price;
 
         _mockUserRepository.Setup(r => r.ExistsAsync(createDto.UserId))
             .ReturnsAsync(true);
@@ -117,6 +100,7 @@ public class ProductServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Name.Should().Be(createDto.Name);
+        result.Price.Should().Be(createDto.Price);
         _mockProductRepository.Verify(r => r.AddAsync(It.IsAny<Product>()), Times.Once);
         _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -125,10 +109,7 @@ public class ProductServiceTests
     public async Task CreateAsync_WhenUserDoesNotExist_ShouldThrowKeyNotFoundException()
     {
         // Arrange
-        var createDto = _fixture.Build<CreateProductDto>()
-            .With(p => p.UserId, 999)
-            .With(p => p.Price, 99.99m)
-            .Create();
+        var createDto = TestDataBuilder.CreateValidProductDto("Test Product", 999);
 
         _mockUserRepository.Setup(r => r.ExistsAsync(createDto.UserId))
             .ReturnsAsync(false);
@@ -144,15 +125,9 @@ public class ProductServiceTests
     {
         // Arrange
         var productId = 1;
-        var updateDto = _fixture.Build<CreateProductDto>()
-            .With(p => p.Name, "Updated Product")
-            .With(p => p.UserId, 1)
-            .Create();
-
-        var existingProduct = _fixture.Build<Product>()
-            .With(p => p.Id, productId)
-            .With(p => p.Name, "Old Product")
-            .Create();
+        var updateDto = TestDataBuilder.CreateValidProductDto("Updated Product", 1);
+        var existingProduct = TestDataBuilder.CreateValidProduct(productId, 1);
+        existingProduct.Name = "Old Product";
 
         _mockProductRepository.Setup(r => r.GetByIdAsync(productId))
             .ReturnsAsync(existingProduct);

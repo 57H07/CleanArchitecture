@@ -1,9 +1,9 @@
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Application.Services;
+using CleanArchitecture.Application.Tests.Helpers;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Domain.Enums;
-using AutoFixture;
 
 namespace CleanArchitecture.Application.Tests.Services;
 
@@ -12,18 +12,11 @@ public class UserServiceTests
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IUserRepository> _mockUserRepository;
     private readonly UserService _userService;
-    private readonly Fixture _fixture;
 
     public UserServiceTests()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockUserRepository = new Mock<IUserRepository>();
-        _fixture = new Fixture();
-
-        // Configure AutoFixture to handle circular references
-        _fixture.Behaviors.OfType<ThrowingRecursionBehavior>().ToList()
-            .ForEach(b => _fixture.Behaviors.Remove(b));
-        _fixture.Behaviors.Add(new OmitOnRecursionBehavior());
 
         // Setup UnitOfWork to return mocked repositories
         _mockUnitOfWork.Setup(u => u.Users).Returns(_mockUserRepository.Object);
@@ -35,7 +28,7 @@ public class UserServiceTests
     public async Task GetAllAsync_ShouldReturnAllUsers()
     {
         // Arrange
-        var users = _fixture.CreateMany<User>(3).ToList();
+        var users = TestDataBuilder.CreateUserList(3);
         _mockUserRepository.Setup(r => r.GetAllAsync())
             .ReturnsAsync(users);
 
@@ -45,6 +38,8 @@ public class UserServiceTests
         // Assert
         result.Should().HaveCount(3);
         result.Should().AllBeOfType<UserDto>();
+        result.First().FirstName.Should().Be("John");
+        result.First().LastName.Should().Be("Doe");
     }
 
     [Fact]
@@ -52,13 +47,7 @@ public class UserServiceTests
     {
         // Arrange
         var userId = 1;
-        var user = _fixture.Build<User>()
-            .With(u => u.Id, userId)
-            .With(u => u.FirstName, "John")
-            .With(u => u.LastName, "Doe")
-            .With(u => u.Email, "john.doe@example.com")
-            .With(u => u.Role, UserRole.User)
-            .Create();
+        var user = TestDataBuilder.CreateValidUser(userId);
         
         _mockUserRepository.Setup(r => r.GetByIdAsync(userId))
             .ReturnsAsync(user);
@@ -71,6 +60,7 @@ public class UserServiceTests
         result!.Id.Should().Be(userId);
         result.FirstName.Should().Be("John");
         result.LastName.Should().Be("Doe");
+        result.Email.Should().Be("john.doe.1@example.com");
         result.Role.Should().Be(UserRole.User);
     }
 
@@ -78,19 +68,12 @@ public class UserServiceTests
     public async Task CreateAsync_WithValidData_ShouldCreateUser()
     {
         // Arrange
-        var createDto = _fixture.Build<CreateUserDto>()
-            .With(u => u.FirstName, "Jane")
-            .With(u => u.LastName, "Smith")
-            .With(u => u.Email, "jane.smith@example.com")
-            .With(u => u.Role, UserRole.User)
-            .Create();
-
-        var createdUser = _fixture.Build<User>()
-            .With(u => u.Id, 1)
-            .With(u => u.FirstName, createDto.FirstName)
-            .With(u => u.LastName, createDto.LastName)
-            .With(u => u.Email, createDto.Email)
-            .Create();
+        var createDto = TestDataBuilder.CreateValidUserDto("Jane", "Smith", "jane.smith@example.com");
+        var createdUser = TestDataBuilder.CreateValidUser(1);
+        // Update the created user to match the DTO
+        createdUser.FirstName = createDto.FirstName;
+        createdUser.LastName = createDto.LastName;
+        createdUser.Email = createDto.Email;
 
         _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
             .ReturnsAsync(createdUser);
@@ -116,9 +99,7 @@ public class UserServiceTests
     public async Task CreateAsync_WithInvalidEmail_ShouldThrowArgumentException(string invalidEmail)
     {
         // Arrange
-        var createDto = _fixture.Build<CreateUserDto>()
-            .With(u => u.Email, invalidEmail)
-            .Create();
+        var createDto = TestDataBuilder.CreateValidUserDto(email: invalidEmail);
 
         // Act & Assert
         var act = async () => await _userService.CreateAsync(createDto);
@@ -130,17 +111,10 @@ public class UserServiceTests
     {
         // Arrange
         var userId = 1;
-        var updateDto = _fixture.Build<CreateUserDto>()
-            .With(u => u.FirstName, "Updated")
-            .With(u => u.LastName, "User")
-            .With(u => u.Email, "updated@example.com")
-            .Create();
-
-        var existingUser = _fixture.Build<User>()
-            .With(u => u.Id, userId)
-            .With(u => u.FirstName, "Old")
-            .With(u => u.LastName, "User")
-            .Create();
+        var updateDto = TestDataBuilder.CreateValidUserDto("Updated", "User", "updated@example.com");
+        var existingUser = TestDataBuilder.CreateValidUser(userId);
+        existingUser.FirstName = "Old";
+        existingUser.LastName = "User";
 
         _mockUserRepository.Setup(r => r.GetByIdAsync(userId))
             .ReturnsAsync(existingUser);
