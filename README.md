@@ -35,12 +35,12 @@ CleanArchitecture/
 
 ## 🚀 Technologies Used
 
-- **Framework**: ASP.NET Core 9.0 MVC
-- **Database**: Entity Framework Core 9.0 with SQL Server LocalDB
-- **Mapping**: Mapster 7.4.0 for object-to-object mapping
+- **Framework**: ASP.NET Core 10.0 MVC
+- **Database**: Entity Framework Core 10.0 with SQL Server LocalDB
+- **Mapping**: Mapster 10.0.12 for object-to-object mapping
 - **UI**: Bootstrap 5 with Bootstrap Icons
 - **Validation**: Data Annotations with client & server-side validation
-- **Development**: .NET 9.0 with nullable reference types enabled
+- **Development**: .NET 10.0 with nullable reference types enabled
 
 ## ✨ Features
 
@@ -74,9 +74,9 @@ CleanArchitecture/
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- .NET 9.0 SDK
+- .NET 10.0 SDK
 - SQL Server or SQL Server LocalDB
-- Visual Studio 2022 or Visual Studio Code
+- Visual Studio 2026 or Visual Studio Code
 
 ### Installation
 
@@ -108,12 +108,8 @@ CleanArchitecture/
 
 5. **Run the application**
    ```bash
-   cd CleanArchitecture.Web
-   dotnet run
+   dotnet run --project .\CleanArchitecture.Web
    ```
-
-6. **Open in browser**
-   Navigate to `https://localhost:5001` or `http://localhost:5000`
 
 ## 📊 Sample Data
 
