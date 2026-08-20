@@ -1,0 +1,103 @@
+﻿@using CleanArchitecture.ViewModels.Shared
+@model PaginationViewModel
+
+@if (Model.HasMultiplePages)
+{
+    <div class="@Model.ContainerCssClasses">
+        @if (Model.ShowPageInfo && Model.TotalItems > 0)
+        {
+            <div class="me-3 align-self-center flex-fill mb-3">
+                <small class="text-muted">
+                    Affichage de @Model.StartItem à @Model.EndItem sur @Model.TotalItems éléments
+                </small>
+            </div>
+        }
+        else
+        {
+            <div class="flex-fill mb-3"></div>
+        }
+
+        <nav aria-label="Pagination">
+            <ul id="@Model.PaginationId" class="pagination mb-3">
+                <!-- Previous Page Button -->
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="#"
+                       onclick="@(!Model.HasPreviousPage ? "return false;" : $"Pagination.changePage('{Model.PaginationId}', {Model.CurrentPage - 1}); return false;")"
+                       aria-label="Page précédente">
+                        <i class="bi bi-chevron-left"></i>
+                        <span class="visually-hidden">Précédent</span>
+                    </a>
+                </li>
+
+                <!-- First Page -->
+                @if (Model.StartPage > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="Pagination.changePage('@Model.PaginationId', 1); return false;">1</a>
+                    </li>
+                    @if (Model.StartPage > 2)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                }
+
+                <!-- Page Numbers -->
+                @for (var pageNum = Model.StartPage; pageNum <= Model.EndPage; pageNum++)
+                {
+                    <li class="page-item @(pageNum == Model.CurrentPage ? "active" : "")">
+                        <a class="page-link" href="#" onclick="Pagination.changePage('@Model.PaginationId', @pageNum); return false;">
+                            @pageNum
+                            @if (pageNum == Model.CurrentPage)
+                            {
+                                <span class="visually-hidden">(page actuelle)</span>
+                            }
+                        </a>
+                    </li>
+                }
+
+                <!-- Last Page -->
+                @if (Model.EndPage < Model.TotalPages)
+                {
+                    @if (Model.EndPage < Model.TotalPages - 1)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    <li class="page-item">
+                        <a class="page-link" href="#" onclick="Pagination.changePage('@Model.PaginationId', @Model.TotalPages); return false;">@Model.TotalPages</a>
+                    </li>
+                }
+
+                <!-- Next Page Button -->
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="#"
+                       onclick="@(!Model.HasNextPage ? "return false;" : $"Pagination.changePage('{Model.PaginationId}', {Model.CurrentPage + 1}); return false;")"
+                       aria-label="Page suivante">
+                        <i class="bi bi-chevron-right"></i>
+                        <span class="visually-hidden">Suivant</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="ms-3 mb-3 d-flex align-items-center">
+            <select id="pageSize_@Model.PaginationId" class="form-select form-select-sm w-auto" onchange="Pagination.changePageSize('@Model.PaginationId', this.value)" aria-label="Taille de la page">
+                @foreach (var size in new[] { 10, 20, 50, 100 })
+                {
+                    <!option value="@size" @(Model.PageSize == size ? "selected" : "")>@size</!option>
+                }
+            </select>
+        </div>
+    </div>
+}
+else if (Model.ShowPageInfo && Model.TotalItems > 0)
+{
+    <div class="@Model.ContainerCssClasses">
+        <small class="text-muted">
+            @Model.TotalItems élément@(Model.TotalItems > 1 ? "s" : "")
+        </small>
+    </div>
+}

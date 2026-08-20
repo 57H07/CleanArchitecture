@@ -1,5 +1,7 @@
+using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Repositories;
+using CleanArchitecture.Application.Interfaces.Services;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
 
@@ -24,6 +26,18 @@ public class ProductService : IProductService
     {
         var products = await _unitOfWork.Products.GetAllAsync();
         return products.Adapt<IEnumerable<ProductDto>>();
+    }
+
+    public async Task<PaginatedList<ProductDto>> GetPagedAsync(int pageIndex, int pageSize)
+    {
+        var pagedProducts = await _unitOfWork.Products.GetPagedAsync(pageIndex, pageSize);
+        var productDtos = pagedProducts.Adapt<List<ProductDto>>();
+
+        return new PaginatedList<ProductDto>(
+            productDtos,
+            pagedProducts.TotalCount,
+            pagedProducts.PageIndex,
+            pagedProducts.PageSize);
     }
 
     public async Task<IEnumerable<ProductDto>> GetByUserIdAsync(int userId)

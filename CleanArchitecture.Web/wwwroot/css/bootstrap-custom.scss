@@ -1,0 +1,11 @@
+﻿@import "../lib/bootstrap/scss/functions";
+@import "../lib/bootstrap/scss/variables";
+@import "../lib/bootstrap/scss/maps";
+
+/* Custom variable values */
+$my-primary-color: $indigo; /* or #0713fa;*/
+$primary: $my-primary-color; // or another color
+$theme-colors: map-merge($theme-colors, ("primary": $my-primary-color));
+
+/* Import Bootstrap */
+@import "../lib/bootstrap/scss/bootstrap";

@@ -1,5 +1,8 @@
+using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Web.ViewModels;
+using CleanArchitecture.ViewModels.Shared;
+using CleanArchitecture.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -22,18 +25,43 @@ public class ProductsController : Controller
     }
 
     // GET: Products
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
     {
         try
         {
-            var products = await _productService.GetAllAsync();
-            return View(products);
+            var products = await _productService.GetPagedAsync(page, pageSize);
+            var pagination = new PaginationViewModel(products)
+            {
+                PaginationId = 1,
+                ContainerCssClasses = "d-flex justify-content-between align-items-center mt-3",
+                ShowPageInfo = true
+            };
+
+            var viewModel = new ProductsViewModel
+            {
+                Products = products,
+                Pagination = pagination
+            };
+
+            return View(viewModel);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while retrieving products");
             TempData["Error"] = "An error occurred while loading products.";
-            return View(new List<ProductDto>());
+            var emptyProducts = new PaginatedList<ProductDto>(new List<ProductDto>(), 0, 1, pageSize < 1 ? 10 : pageSize);
+            var pagination = new PaginationViewModel(emptyProducts)
+            {
+                PaginationId = 1,
+                ContainerCssClasses = "d-flex justify-content-between align-items-center mt-3",
+                ShowPageInfo = true
+            };
+
+            return View(new ProductsViewModel
+            {
+                Products = emptyProducts,
+                Pagination = pagination
+            });
         }
     }
 

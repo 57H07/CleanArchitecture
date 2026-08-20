@@ -1,9 +1,8 @@
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Application.Services;
 using CleanArchitecture.Application.Tests.Helpers;
 using CleanArchitecture.Domain.Entities;
-using CleanArchitecture.Domain.Enums;
 
 namespace CleanArchitecture.Application.Tests.Services;
 

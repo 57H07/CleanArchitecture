@@ -1,4 +1,5 @@
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Repositories;
+using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +27,15 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .Include(p => p.User)
             .ToListAsync();
+    }
+
+    public async Task<PaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize)
+    {
+        var query = _context.Products
+            .Include(p => p.User)
+            .AsQueryable();
+
+        return await PaginatedList<Product>.CreateAsync(query, pageIndex, pageSize);
     }
 
     public async Task<IEnumerable<Product>> GetByUserIdAsync(int userId)

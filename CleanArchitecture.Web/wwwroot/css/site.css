@@ -21,6 +21,11 @@ body {
   margin-bottom: 60px;
 }
 
+button:focus, .btn:focus, .btn:focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
   color: var(--bs-secondary-color);
   text-align: end;

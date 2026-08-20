@@ -1,4 +1,4 @@
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 

@@ -1,5 +1,5 @@
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.Web.Controllers;

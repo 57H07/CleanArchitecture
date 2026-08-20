@@ -1,9 +1,10 @@
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Interfaces;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
 using System.Text.RegularExpressions;
+using CleanArchitecture.Application.Interfaces.Services;
+using CleanArchitecture.Application.Interfaces.Repositories;
 
 namespace CleanArchitecture.Application.Services;
 

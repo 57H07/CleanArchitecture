@@ -1,4 +1,5 @@
-using CleanArchitecture.Application.Interfaces;
+using CleanArchitecture.Application.Interfaces.Repositories;
+using CleanArchitecture.Application.Interfaces.Services;
 using CleanArchitecture.Application.Mappings;
 using CleanArchitecture.Application.Services;
 using CleanArchitecture.Infrastructure.Data;
