@@ -8,12 +8,17 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ApplicationDbContext _context;
     private IDbContextTransaction? _transaction;
+    private bool _disposed;
 
-    public UnitOfWork(ApplicationDbContext context)
+    public UnitOfWork(
+        ApplicationDbContext context,
+        IProductRepository products,
+        IUserRepository users
+    )
     {
         _context = context;
-        Users = new UserRepository(_context);
-        Products = new ProductRepository(_context);
+        Users = users;
+        Products = products;
     }
 
     public IUserRepository Users { get; }
@@ -24,26 +29,31 @@ public class UnitOfWork : IUnitOfWork
         return await _context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task BeginTransactionAsync()
-    {
-        _transaction = await _context.Database.BeginTransactionAsync();
-    }
-
-    public async Task CommitTransactionAsync()
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_transaction != null)
         {
-            await _transaction.CommitAsync();
+            throw new InvalidOperationException("Une transaction est déjà ouverte sur cette unité de travail.");
+        }
+
+        _transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction != null)
+        {
+            await _transaction.CommitAsync(cancellationToken);
             await _transaction.DisposeAsync();
             _transaction = null;
         }
     }
 
-    public async Task RollbackTransactionAsync()
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_transaction != null)
         {
-            await _transaction.RollbackAsync();
+            await _transaction.RollbackAsync(cancellationToken);
             await _transaction.DisposeAsync();
             _transaction = null;
         }
@@ -51,7 +61,33 @@ public class UnitOfWork : IUnitOfWork
 
     public void Dispose()
     {
+        if (_disposed)
+        {
+            return;
+        }
+
         _transaction?.Dispose();
-        _context.Dispose();
+        _transaction = null;
+        _disposed = true;
+
+        GC.SuppressFinalize(this);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        if (_transaction != null)
+        {
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+
+        _disposed = true;
+
+        GC.SuppressFinalize(this);
     }
 }
