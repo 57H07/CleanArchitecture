@@ -1,0 +1,66 @@
+@{
+    string toastHeader = string.Empty;
+    string toastMessage = string.Empty;
+    string toastIcon = string.Empty;
+    string toastColor = string.Empty;
+
+    ToastMessage? toast = ToastMessage.Deserialize(TempData[ToastMessage.SuccessKey]);
+
+    if (toast != null)
+    {
+        toastIcon = "bi-check-circle-fill";
+        toastColor = "success";
+    }
+    else
+    {
+        toast = ToastMessage.Deserialize(TempData[ToastMessage.ErrorKey]);
+
+        if (toast != null)
+        {
+            toastIcon = "bi-exclamation-triangle-fill";
+            toastColor = "danger";
+        }
+    }
+
+    if (toast != null)
+    {
+        toastHeader = toast.Header;
+        toastMessage = toast.Message;
+    }
+    else
+    {
+        string? succesBrut = TempData["Success"] as string;
+        string? erreurBrut = TempData["Error"] as string;
+
+        if (!string.IsNullOrEmpty(succesBrut))
+        {
+            toastMessage = succesBrut;
+            toastIcon = "bi-check-circle-fill";
+            toastColor = "success";
+        }
+        else if (!string.IsNullOrEmpty(erreurBrut))
+        {
+            toastMessage = erreurBrut;
+            toastIcon = "bi-exclamation-triangle-fill";
+            toastColor = "danger";
+        }
+    }
+}
+
+@if (!String.IsNullOrEmpty(toastMessage))
+{
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100">
+        <div id="infoToast" class="toast border-@toastColor" role="alert" aria-live="assertive" aria-atomic="true">
+
+            <div class="toast-header text-bg-@toastColor">
+                <i class="bi @toastIcon me-2"></i>
+                <strong class="me-auto">@toastHeader</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+
+            <div class="toast-body">
+                @toastMessage
+            </div>
+        </div>
+    </div>
+}

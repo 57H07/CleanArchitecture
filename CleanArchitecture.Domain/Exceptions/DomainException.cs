@@ -10,3 +10,17 @@ public abstract class DomainException : Exception
     {
     }
 }
+
+public abstract class RessourceNotFoundException : DomainException
+{
+    protected RessourceNotFoundException(string message) : base(message)
+    {
+    }
+}
+
+public abstract class InsufficientRightsException : DomainException
+{
+    protected InsufficientRightsException(string message) : base(message)
+    {
+    }
+}

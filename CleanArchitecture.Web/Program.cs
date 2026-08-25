@@ -1,11 +1,13 @@
 using CleanArchitecture.Infrastructure.DependencyInjection;
 using CleanArchitecture.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using CleanArchitecture.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
+});
 
 // Add Clean Architecture services
 builder.Services.AddInfrastructure(builder.Configuration);
@@ -16,8 +18,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseMiddleware<GlobalExceptionMiddleware>();
     app.UseHsts();
 }
 else
@@ -25,13 +26,12 @@ else
     app.UseDeveloperExceptionPage();
 }
 
-// Ensure database is created and migrated
+// Ensure database is created and migrated => To Remove and use EF Migrations 
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
     context.Database.EnsureDeleted();
-
     context.Database.EnsureCreated();
 }
 
