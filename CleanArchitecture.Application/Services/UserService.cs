@@ -17,31 +17,31 @@ public class UserService : IUserService
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<UserDto?> GetByIdAsync(int id)
+    public async Task<UserDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
         return user?.Adapt<UserDto>();
     }
 
-    public async Task<UserDto?> GetByEmailAsync(string email)
+    public async Task<UserDto?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Users.GetByEmailAsync(email);
+        var user = await _unitOfWork.Users.GetByEmailAsync(email, cancellationToken);
         return user?.Adapt<UserDto>();
     }
 
-    public async Task<IEnumerable<UserDto>> GetAllAsync()
+    public async Task<IEnumerable<UserDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var users = await _unitOfWork.Users.GetAllAsync();
+        var users = await _unitOfWork.Users.GetAllAsync(cancellationToken);
         return users.Adapt<IEnumerable<UserDto>>();
     }
 
-    public async Task<IEnumerable<UserDto>> GetActiveUsersAsync()
+    public async Task<IEnumerable<UserDto>> GetActiveUsersAsync(CancellationToken cancellationToken = default)
     {
-        var users = await _unitOfWork.Users.GetActiveUsersAsync();
+        var users = await _unitOfWork.Users.GetActiveUsersAsync(cancellationToken);
         return users.Adapt<IEnumerable<UserDto>>();
     }
 
-    public async Task<UserDto> CreateAsync(CreateUserDto createUserDto)
+    public async Task<UserDto> CreateAsync(CreateUserDto createUserDto, CancellationToken cancellationToken = default)
     {
         // Validate email format
         if (string.IsNullOrWhiteSpace(createUserDto.Email) || !IsValidEmail(createUserDto.Email))
@@ -49,7 +49,7 @@ public class UserService : IUserService
             throw new ArgumentException("Invalid email format", nameof(createUserDto.Email));
         }
 
-        if (await _unitOfWork.Users.EmailExistsAsync(createUserDto.Email))
+        if (await _unitOfWork.Users.EmailExistsAsync(createUserDto.Email, cancellationToken))
         {
             throw new DuplicateEntityException("User", "email", createUserDto.Email);
         }
@@ -57,23 +57,23 @@ public class UserService : IUserService
         var user = createUserDto.Adapt<User>();
         user.CreatedAt = DateTime.UtcNow;
 
-        var createdUser = await _unitOfWork.Users.AddAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Users.AddAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return createdUser.Adapt<UserDto>();
+        return user.Adapt<UserDto>();
     }
 
-    public async Task<UserDto> UpdateAsync(int id, CreateUserDto updateUserDto)
+    public async Task<UserDto> UpdateAsync(int id, CreateUserDto updateUserDto, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
         if (user == null)
         {
             throw new KeyNotFoundException($"User with ID {id} not found.");
         }
 
         // Check if email is changing and if new email already exists
-        if (user.Email != updateUserDto.Email && 
-            await _unitOfWork.Users.EmailExistsAsync(updateUserDto.Email))
+        if (user.Email != updateUserDto.Email &&
+            await _unitOfWork.Users.EmailExistsAsync(updateUserDto.Email, cancellationToken))
         {
             throw new InvalidOperationException("A user with this email already exists.");
         }
@@ -81,26 +81,26 @@ public class UserService : IUserService
         updateUserDto.Adapt(user);
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _unitOfWork.Users.UpdateAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return user.Adapt<UserDto>();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        if (!await _unitOfWork.Users.ExistsAsync(id))
+        if (!await _unitOfWork.Users.ExistsAsync(id, cancellationToken))
         {
             throw new KeyNotFoundException($"User with ID {id} not found.");
         }
 
-        await _unitOfWork.Users.DeleteAsync(id);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Users.DeleteAsync(id, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task ActivateAsync(int id)
+    public async Task ActivateAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
         if (user == null)
         {
             throw new KeyNotFoundException($"User with ID {id} not found.");
@@ -109,13 +109,13 @@ public class UserService : IUserService
         user.Activate();
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _unitOfWork.Users.UpdateAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task DeactivateAsync(int id)
+    public async Task DeactivateAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _unitOfWork.Users.GetByIdAsync(id);
+        var user = await _unitOfWork.Users.GetByIdAsync(id, cancellationToken);
         if (user == null)
         {
             throw new KeyNotFoundException($"User with ID {id} not found.");
@@ -124,18 +124,18 @@ public class UserService : IUserService
         user.Deactivate();
         user.UpdatedAt = DateTime.UtcNow;
 
-        await _unitOfWork.Users.UpdateAsync(user);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Users.UpdateAsync(user, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<bool> ExistsAsync(int id)
+    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _unitOfWork.Users.ExistsAsync(id);
+        return await _unitOfWork.Users.ExistsAsync(id, cancellationToken);
     }
 
-    public async Task<bool> EmailExistsAsync(string email)
+    public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _unitOfWork.Users.EmailExistsAsync(email);
+        return await _unitOfWork.Users.EmailExistsAsync(email, cancellationToken);
     }
 
     private static bool IsValidEmail(string email)

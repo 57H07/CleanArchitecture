@@ -88,8 +88,8 @@ public class ProductServiceTests
 
         _mockUserRepository.Setup(r => r.ExistsAsync(createDto.UserId))
             .ReturnsAsync(true);
-        _mockProductRepository.Setup(r => r.AddAsync(It.IsAny<Product>()))
-            .ReturnsAsync(createdProduct);
+        _mockProductRepository.Setup(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 
@@ -100,7 +100,7 @@ public class ProductServiceTests
         result.Should().NotBeNull();
         result.Name.Should().Be(createDto.Name);
         result.Price.Should().Be(createDto.Price);
-        _mockProductRepository.Verify(r => r.AddAsync(It.IsAny<Product>()), Times.Once);
+        _mockProductRepository.Verify(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()), Times.Once);
         _mockUnitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

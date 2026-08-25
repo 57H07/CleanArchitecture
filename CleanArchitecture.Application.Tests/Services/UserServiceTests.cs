@@ -75,8 +75,9 @@ public class UserServiceTests
         createdUser.LastName = createDto.LastName;
         createdUser.Email = createDto.Email;
 
-        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
-            .ReturnsAsync(createdUser);
+        _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
 

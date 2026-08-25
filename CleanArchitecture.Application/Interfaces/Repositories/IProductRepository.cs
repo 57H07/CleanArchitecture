@@ -5,14 +5,14 @@ namespace CleanArchitecture.Application.Interfaces.Repositories;
 
 public interface IProductRepository
 {
-    Task<Product?> GetByIdAsync(int id);
-    Task<IEnumerable<Product>> GetAllAsync();
-    Task<IPaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize);
-    Task<IEnumerable<Product>> GetByUserIdAsync(int userId);
-    Task<IEnumerable<Product>> GetByCategoryAsync(string category);
-    Task<IEnumerable<Product>> GetAvailableProductsAsync();
-    Task<Product> AddAsync(Product product);
-    Task UpdateAsync(Product product);
-    Task DeleteAsync(int id);
-    Task<bool> ExistsAsync(int id);
+    Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IPaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Product>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Product>> GetByCategoryAsync(string category, CancellationToken cancellationToken = default);
+    Task<IEnumerable<Product>> GetAvailableProductsAsync(CancellationToken cancellationToken = default);
+    Task AddAsync(Product product, CancellationToken cancellationToken = default);
+    Task UpdateAsync(Product product, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+    Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default);
 }

@@ -14,63 +14,62 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User?> GetByIdAsync(int id)
+    public async Task<User?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(u => u.Products)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
     }
 
-    public async Task<User?> GetByEmailAsync(string email)
+    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(u => u.Products)
-            .FirstOrDefaultAsync(u => u.Email == email);
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
     }
 
-    public async Task<IEnumerable<User>> GetAllAsync()
+    public async Task<IEnumerable<User>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(u => u.Products)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<User>> GetActiveUsersAsync()
+    public async Task<IEnumerable<User>> GetActiveUsersAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Users
             .Include(u => u.Products)
             .Where(u => u.IsActive)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public Task<User> AddAsync(User user)
+    public async Task AddAsync(User user, CancellationToken cancellationToken = default)
     {
-        _context.Users.Add(user);
-        return Task.FromResult(user);
+        await _context.Users.AddAsync(user, cancellationToken);
     }
 
-    public Task UpdateAsync(User user)
+    public Task UpdateAsync(User user, CancellationToken cancellationToken = default)
     {
         _context.Entry(user).State = EntityState.Modified;
         return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users.FindAsync(id);
+        var user = await _context.Users.FindAsync(id, cancellationToken);
         if (user != null)
         {
             _context.Users.Remove(user);
         }
     }
 
-    public async Task<bool> ExistsAsync(int id)
+    public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Users.AnyAsync(u => u.Id == id);
+        return await _context.Users.AnyAsync(u => u.Id == id, cancellationToken);
     }
 
-    public async Task<bool> EmailExistsAsync(string email)
+    public async Task<bool> EmailExistsAsync(string email, CancellationToken cancellationToken = default)
     {
-        return await _context.Users.AnyAsync(u => u.Email == email);
+        return await _context.Users.AnyAsync(u => u.Email == email, cancellationToken);
     }
 }
