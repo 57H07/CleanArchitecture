@@ -1,11 +1,6 @@
 using CleanArchitecture.Application.Interfaces.Repositories;
-using CleanArchitecture.Application.Interfaces.Services;
-using CleanArchitecture.Application.Mappings;
-using CleanArchitecture.Application.Services;
 using CleanArchitecture.Infrastructure.Data;
 using CleanArchitecture.Infrastructure.Repositories;
-using Mapster;
-using MapsterMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,20 +19,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-        return services;
-    }
-
-    public static IServiceCollection AddApplication(this IServiceCollection services)
-    {
-        // Configure Mapster
-        MappingConfig.Configure();
-        services.AddSingleton(TypeAdapterConfig.GlobalSettings);
-        services.AddScoped<IMapper, ServiceMapper>();
-
-        // Add application services
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IProductService, ProductService>();
 
         return services;
     }

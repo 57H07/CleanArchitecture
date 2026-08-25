@@ -1,5 +1,6 @@
-using CleanArchitecture.Infrastructure.DependencyInjection;
+using CleanArchitecture.Application.DependencyInjection;
 using CleanArchitecture.Infrastructure.Data;
+using CleanArchitecture.Infrastructure.DependencyInjection;
 using CleanArchitecture.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,13 +10,11 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
 });
 
-// Add Clean Architecture services
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseMiddleware<GlobalExceptionMiddleware>();

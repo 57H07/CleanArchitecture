@@ -12,7 +12,6 @@ public class GlobalExceptionMiddleware
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
     private readonly IHostEnvironment _environment;
-
     private static readonly PathString ErrorRedirectPath = "/";
 
     public GlobalExceptionMiddleware(
@@ -89,7 +88,6 @@ public class GlobalExceptionMiddleware
 
         Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory? factory = context.RequestServices
             .GetService<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory>();
-
         if (factory != null)
         {
             var tempData = factory.GetTempData(context);
