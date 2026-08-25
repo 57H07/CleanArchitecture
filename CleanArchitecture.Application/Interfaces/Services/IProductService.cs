@@ -8,7 +8,7 @@ public interface IProductService
 {
     Task<ProductDto?> GetByIdAsync(int id);
     Task<IEnumerable<ProductDto>> GetAllAsync();
-    Task<PaginatedList<ProductDto>> GetPagedAsync(int pageIndex, int pageSize);
+    Task<PagedResult<ProductDto>> GetPagedAsync(int pageIndex, int pageSize);
     Task<IEnumerable<ProductDto>> GetByUserIdAsync(int userId);
     Task<IEnumerable<ProductDto>> GetByCategoryAsync(string category);
     Task<IEnumerable<ProductDto>> GetAvailableProductsAsync();

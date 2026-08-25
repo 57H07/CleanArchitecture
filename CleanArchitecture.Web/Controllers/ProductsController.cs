@@ -29,7 +29,7 @@ public class ProductsController : Controller
     {
         try
         {
-            var products = await _productService.GetPagedAsync(page, pageSize);
+            PagedResult<ProductDto> products = await _productService.GetPagedAsync(page, pageSize);
             var pagination = new PaginationViewModel(products)
             {
                 PaginationId = 1,
@@ -49,7 +49,7 @@ public class ProductsController : Controller
         {
             _logger.LogError(ex, "Error occurred while retrieving products");
             TempData["Error"] = "An error occurred while loading products.";
-            var emptyProducts = new PaginatedList<ProductDto>(new List<ProductDto>(), 0, 1, pageSize < 1 ? 10 : pageSize);
+            var emptyProducts = PagedResult<ProductDto>.Empty();
             var pagination = new PaginationViewModel(emptyProducts)
             {
                 PaginationId = 1,

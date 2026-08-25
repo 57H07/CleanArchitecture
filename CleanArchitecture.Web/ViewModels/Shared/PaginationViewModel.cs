@@ -1,8 +1,9 @@
-﻿using CleanArchitecture.Application.Interfaces.Collections;
+﻿using CleanArchitecture.Application.Collections;
+using CleanArchitecture.Application.DTOs;
 
 namespace CleanArchitecture.ViewModels.Shared
 {
-    public class PaginationViewModel(IPaginatedList list)
+    public class PaginationViewModel(PagedResult<ProductDto> list)
     {
         public int CurrentPage { get; set; } = list.PageIndex;
         public int TotalItems { get; set; } = list.TotalCount;

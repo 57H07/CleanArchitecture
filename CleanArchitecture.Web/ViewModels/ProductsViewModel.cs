@@ -9,7 +9,7 @@ namespace CleanArchitecture.Web.ViewModels;
 
 public class ProductsViewModel
 {
-    public required PaginatedList<ProductDto> Products { get; init; }
+    public required PagedResult<ProductDto> Products { get; init; }
     public required PaginationViewModel Pagination { get; init; }
 
     // Search and filtering

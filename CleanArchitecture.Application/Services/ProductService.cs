@@ -28,16 +28,11 @@ public class ProductService : IProductService
         return products.Adapt<IEnumerable<ProductDto>>();
     }
 
-    public async Task<PaginatedList<ProductDto>> GetPagedAsync(int pageIndex, int pageSize)
+    public async Task<PagedResult<ProductDto>> GetPagedAsync(int pageIndex, int pageSize)
     {
         var pagedProducts = await _unitOfWork.Products.GetPagedAsync(pageIndex, pageSize);
-        var productDtos = pagedProducts.Adapt<List<ProductDto>>();
 
-        return new PaginatedList<ProductDto>(
-            productDtos,
-            pagedProducts.TotalCount,
-            pagedProducts.PageIndex,
-            pagedProducts.PageSize);
+        return pagedProducts.ToPagedResult(dto => dto.Adapt<ProductDto>());
     }
 
     public async Task<IEnumerable<ProductDto>> GetByUserIdAsync(int userId)

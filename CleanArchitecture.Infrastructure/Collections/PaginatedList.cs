@@ -3,60 +3,55 @@ using CleanArchitecture.Application.Interfaces.Collections;
 
 namespace CleanArchitecture.Infrastructure.Collections
 {
-    public class PaginatedList<T> : List<T>, IPaginatedList
+    public class PaginatedList<T> : IPaginatedList<T>
     {
-        public int PageIndex { get; private set; }
-        public int TotalPages { get; private set; }
-        public int TotalCount { get; private set; }
-        public int PageSize { get; private set; }
+        private readonly IReadOnlyList<T> _items;
+
+        private PaginatedList(IReadOnlyList<T> items, int totalCount, int pageIndex, int pageSize)
+        {
+            _items = items;
+            TotalCount = totalCount;
+            PageIndex = pageIndex;
+            PageSize = pageSize;
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+        }
+
+        public int PageIndex { get; }
+        public int PageSize { get; }
+        public int TotalCount { get; }
+        public int TotalPages { get; }
         public bool HasPreviousPage => PageIndex > 1;
         public bool HasNextPage => PageIndex < TotalPages;
 
-        public PaginatedList(IEnumerable<T> items, int pageIndex, int totalPages, int totalCount,  int pageSize)
-        {
-            PageIndex = pageIndex;
-            TotalPages = totalPages;
-            TotalCount = totalCount;
-            PageSize = pageSize;
-            AddRange(items);
-        }
+        public int Count => _items.Count;
+        public T this[int index] => _items[index];
+        public IEnumerator<T> GetEnumerator() => _items.GetEnumerator();
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public PaginatedList(IEnumerable<T> items, int count, int pageIndex, int pageSize)
+        public static async Task<PaginatedList<T>> CreateAsync(
+            IQueryable<T> source,
+            int pageIndex,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
-            PageIndex = pageIndex;
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
-            TotalCount = count;
-            PageSize = pageSize;
-            AddRange(items);
-        }
+            ArgumentOutOfRangeException.ThrowIfLessThan(pageIndex, 1);
+            ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
-        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
-        {
-            var count = await source.CountAsync();
-            var items = await source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+            int count = await source.CountAsync(cancellationToken);
+            List<T> items = await source
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(cancellationToken);
+
             return new PaginatedList<T>(items, count, pageIndex, pageSize);
         }
 
-        public static PaginatedList<T> Create(IQueryable<T> source, int pageIndex, int pageSize)
+        public static PaginatedList<T> FromMaterialized(IReadOnlyList<T> items, int totalCount, int pageIndex, int pageSize)
         {
-            var count = source.Count();
-            var items = source.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToList();
-            return new PaginatedList<T>(items, count, pageIndex, pageSize);
-        }
+            ArgumentOutOfRangeException.ThrowIfLessThan(pageIndex, 1);
+            ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
 
-        public int GetStartIndex()
-        {
-            return (PageIndex - 1) * PageSize + 1;
-        }
-
-        public int GetEndIndex()
-        {
-            return Math.Min(PageIndex * PageSize, TotalCount);
-        }
-
-        public bool IsValidPage()
-        {
-            return PageIndex >= 1 && PageIndex <= TotalPages;
+            return new PaginatedList<T>(items, totalCount, pageIndex, pageSize);
         }
     }
 }

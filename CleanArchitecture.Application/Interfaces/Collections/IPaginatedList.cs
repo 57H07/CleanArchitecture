@@ -1,16 +1,15 @@
-﻿namespace CleanArchitecture.Application.Interfaces.Collections
-{
-    public interface IPaginatedList
-    {
-        bool HasNextPage { get; }
-        bool HasPreviousPage { get; }
-        int PageIndex { get; }
-        int PageSize { get; }
-        int TotalCount { get; }
-        int TotalPages { get; }
+﻿namespace CleanArchitecture.Application.Interfaces.Collections;
 
-        int GetEndIndex();
-        int GetStartIndex();
-        bool IsValidPage();
-    }
+public interface IPaginatedList<out T> : IReadOnlyList<T>
+{
+    int PageIndex { get; }
+
+    int PageSize { get; }
+
+    int TotalCount { get; }
+
+    int TotalPages { get; }
+
+    bool HasPreviousPage { get; }
+    bool HasNextPage { get; }
 }

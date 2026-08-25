@@ -3,6 +3,8 @@ using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using CleanArchitecture.Application.Interfaces.Collections;
+using CleanArchitecture.Infrastructure.Collections;
 
 namespace CleanArchitecture.Infrastructure.Repositories;
 
@@ -29,7 +31,7 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
-    public async Task<PaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize)
+    public async Task<IPaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize)
     {
         var query = _context.Products
             .Include(p => p.User)
