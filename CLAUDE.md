@@ -12,7 +12,7 @@ dotnet run --project CleanArchitecture.Web     # run the MVC app (LocalDB requir
 dotnet watch run --project CleanArchitecture.Web
 dotnet test                                    # all tests (CleanArchitecture.Application.Tests)
 dotnet test --filter "FullyQualifiedName~ProductServiceTests.GetAllAsync_ShouldReturnAllProducts"   # single test
-dotnet test --filter "FullyQualifiedName~UserServiceTests"                                          # one test class
+dotnet test --filter "FullyQualifiedName~CustomerServiceTests"                                      # one test class
 ```
 
 `Migrate-NetCore.ps1` bumps every csproj TFM and NuGet packages to a new .NET major version (`-TargetVersion 11`, `-WhatIfMode`). Only use it when asked to upgrade .NET.
@@ -25,7 +25,7 @@ Each layer registers itself via an extension method: `AddApplication()` (Mapster
 
 ### Data access: Unit of Work only
 
-Application services take a single `IUnitOfWork`, which exposes repositories as properties (`Users`, `Products`) plus `SaveChangesAsync` and explicit transaction methods. Repositories never call `SaveChanges`; the service does, after mutating through the repository. Adding an entity means adding an `IXxxRepository` in `Application/Interfaces/Repositories`, its EF implementation in `Infrastructure/Repositories`, and a property on both `IUnitOfWork` and `UnitOfWork`.
+Application services take a single `IUnitOfWork`, which exposes repositories as properties (`Products`, `Customers`) plus `SaveChangesAsync` and explicit transaction methods. Repositories never call `SaveChanges`; the service does, after mutating through the repository. Adding an entity means adding an `IXxxRepository` in `Application/Interfaces/Repositories`, its EF implementation in `Infrastructure/Repositories`, and a property on both `IUnitOfWork` and `UnitOfWork`.
 
 Every repository/service method takes a trailing `CancellationToken cancellationToken = default` and forwards it.
 
@@ -35,7 +35,7 @@ Every repository/service method takes a trailing `CancellationToken cancellation
 
 ### Mapping: Mapster with scanned `IRegister`
 
-`MappingConfig.Configure()` scans the Application assembly for `IRegister` implementations (`UserMappings`, `ProductMappings`) and compiles the global config. Add new mappings as an `IRegister` class in `Application/Mappings`; do not configure mappings elsewhere. Services use the static `.Adapt<T>()` extension.
+`MappingConfig.Configure()` scans the Application assembly for `IRegister` implementations (`ProductMappings`, `CustomerMappings`) and compiles the global config. Add new mappings as an `IRegister` class in `Application/Mappings`; do not configure mappings elsewhere. Services use the static `.Adapt<T>()` extension.
 
 ### Exceptions and HTTP mapping
 
@@ -49,7 +49,7 @@ Two things to know before changing error handling:
 
 - Controllers are thin, wrap service calls in try/catch, and signal outcome via TempData. Two coexisting styles: plain `TempData["Success"]` / `TempData["Error"]` strings, and serialized `ToastMessage` under `ToastMessage.SuccessKey` / `ErrorKey`. `Views/Shared/_Toast.cshtml` reads both.
 - `AutoValidateAntiforgeryTokenAttribute` is a global filter, so every POST form needs the antiforgery token.
-- Create/Update forms bind directly to Application DTOs (`CreateProductDto`, `CreateUserDto`) validated with Data Annotations; `ViewModels/` hold list/paging shapes only.
+- Create/Update forms bind directly to Application DTOs (`CreateProductDto`, `CreateCustomerDto`) validated with Data Annotations; `ViewModels/` hold list/paging shapes only.
 - `PaginationViewComponent` and the shared view models live in namespaces `CleanArchitecture.ViewComponents` / `CleanArchitecture.ViewModels.Shared` (no `.Web`), unlike the rest of the Web project.
 
 ### Database

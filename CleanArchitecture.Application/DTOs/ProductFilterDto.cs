@@ -14,7 +14,7 @@ public class ProductFilterDto : PagedFilterDto
 
     public ProductStatus? Status { get; set; }
 
-    public int? UserId { get; set; }
+    public int? CustomerId { get; set; }
 
     public ProductSortBy SortBy { get; set; } = ProductSortBy.Name;
 
@@ -24,5 +24,5 @@ public class ProductFilterDto : PagedFilterDto
         !string.IsNullOrWhiteSpace(SearchTerm) ||
         !string.IsNullOrWhiteSpace(Category) ||
         Status.HasValue ||
-        UserId.HasValue;
+        CustomerId.HasValue;
 }

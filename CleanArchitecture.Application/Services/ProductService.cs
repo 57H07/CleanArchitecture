@@ -39,9 +39,9 @@ public class ProductService : IProductService
         return pagedProducts.ToPagedResult(dto => dto.Adapt<ProductDto>());
     }
 
-    public async Task<IEnumerable<ProductDto>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<ProductDto>> GetByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
     {
-        var products = await _unitOfWork.Products.GetByUserIdAsync(userId, cancellationToken);
+        var products = await _unitOfWork.Products.GetByCustomerIdAsync(customerId, cancellationToken);
         return products.Adapt<IEnumerable<ProductDto>>();
     }
 
@@ -59,10 +59,10 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateAsync(CreateProductDto createProductDto, CancellationToken cancellationToken = default)
     {
-        // Validate that the user exists
-        if (!await _unitOfWork.Users.ExistsAsync(createProductDto.UserId, cancellationToken))
+        // Validate that the customer exists
+        if (!await _unitOfWork.Customers.ExistsAsync(createProductDto.CustomerId, cancellationToken))
         {
-            throw new KeyNotFoundException($"User with ID {createProductDto.UserId} not found.");
+            throw new KeyNotFoundException($"Customer with ID {createProductDto.CustomerId} not found.");
         }
 
         var product = createProductDto.Adapt<Product>();
@@ -82,11 +82,11 @@ public class ProductService : IProductService
             throw new KeyNotFoundException($"Product with ID {id} not found.");
         }
 
-        // Validate that the user exists if changing user
-        if (product.UserId != updateProductDto.UserId && 
-            !await _unitOfWork.Users.ExistsAsync(updateProductDto.UserId, cancellationToken))
+        // Validate that the customer exists if changing customer
+        if (product.CustomerId != updateProductDto.CustomerId && 
+            !await _unitOfWork.Customers.ExistsAsync(updateProductDto.CustomerId, cancellationToken))
         {
-            throw new KeyNotFoundException($"User with ID {updateProductDto.UserId} not found.");
+            throw new KeyNotFoundException($"Customer with ID {updateProductDto.CustomerId} not found.");
         }
 
         updateProductDto.Adapt(product);
@@ -144,10 +144,10 @@ public class ProductService : IProductService
     /// - Generates audit logs
     /// - Triggers notification workflows
     /// </summary>
-    public async Task<ResultDto<ProductLaunchDto>> LaunchProductAsync(ProductLaunchRequestDto launchRequest, UserDto currentUser, CancellationToken cancellationToken = default)
+    public async Task<ResultDto<ProductLaunchDto>> LaunchProductAsync(ProductLaunchRequestDto launchRequest, CustomerDto currentCustomer, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(launchRequest);
-        ArgumentNullException.ThrowIfNull(currentUser);
+        ArgumentNullException.ThrowIfNull(currentCustomer);
 
         try
         {
@@ -179,7 +179,7 @@ public class ProductService : IProductService
             await SetupProductVariantsAsync(product.Id, launchRequest.ProductVariants, cancellationToken);
 
             // 8. Create audit trail
-            await CreateProductLaunchAuditLogsAsync(product, campaigns, currentUser, cancellationToken);
+            await CreateProductLaunchAuditLogsAsync(product, campaigns, currentCustomer, cancellationToken);
 
             // 9. Setup automated reorder rules
             await ConfigureReorderRulesAsync(product.Id, launchRequest.ReorderSettings, cancellationToken);
@@ -245,7 +245,7 @@ public class ProductService : IProductService
                 Category = launchRequest.Category,
                 Price = launchRequest.BasePrice,
                 CreatedAt = DateTime.UtcNow,
-                UserId = launchRequest.UserId
+                CustomerId = launchRequest.CustomerId
             };
             await _unitOfWork.Products.AddAsync(product, cancellationToken);
         }
@@ -348,7 +348,7 @@ public class ProductService : IProductService
         }
     }
 
-    private async Task CreateProductLaunchAuditLogsAsync(Product product, List<MarketingCampaignResult> campaigns, UserDto user, CancellationToken cancellationToken = default)
+    private async Task CreateProductLaunchAuditLogsAsync(Product product, List<MarketingCampaignResult> campaigns, CustomerDto customer, CancellationToken cancellationToken = default)
     {
         // In a real implementation, this would create audit log entries
         await Task.Delay(1, cancellationToken); // Simulate async operation

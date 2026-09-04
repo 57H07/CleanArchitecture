@@ -28,6 +28,14 @@ public class CustomerRepository : ICustomerRepository
         return await _context.Customers.ToListAsync(cancellationToken);
     }
 
+    public async Task<IEnumerable<Customer>> GetActiveCustomersAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Customers
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.Name)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IPaginatedList<Customer>> GetPagedAsync(CustomerFilterDto filter, CancellationToken cancellationToken = default)
     {
         var query = _context.Customers.AsQueryable();

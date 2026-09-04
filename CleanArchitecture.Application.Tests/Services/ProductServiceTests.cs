@@ -10,18 +10,18 @@ public class ProductServiceTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IProductRepository> _mockProductRepository;
-    private readonly Mock<IUserRepository> _mockUserRepository;
+    private readonly Mock<ICustomerRepository> _mockCustomerRepository;
     private readonly ProductService _productService;
 
     public ProductServiceTests()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockProductRepository = new Mock<IProductRepository>();
-        _mockUserRepository = new Mock<IUserRepository>();
+        _mockCustomerRepository = new Mock<ICustomerRepository>();
 
         // Setup UnitOfWork to return mocked repositories
         _mockUnitOfWork.Setup(u => u.Products).Returns(_mockProductRepository.Object);
-        _mockUnitOfWork.Setup(u => u.Users).Returns(_mockUserRepository.Object);
+        _mockUnitOfWork.Setup(u => u.Customers).Returns(_mockCustomerRepository.Object);
 
         _productService = new ProductService(_mockUnitOfWork.Object);
     }
@@ -78,7 +78,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenUserExists_ShouldCreateProduct()
+    public async Task CreateAsync_WhenCustomerExists_ShouldCreateProduct()
     {
         // Arrange
         var createDto = TestDataBuilder.CreateValidProductDto("New Product", 1);
@@ -86,7 +86,7 @@ public class ProductServiceTests
         createdProduct.Name = createDto.Name;
         createdProduct.Price = createDto.Price;
 
-        _mockUserRepository.Setup(r => r.ExistsAsync(createDto.UserId))
+        _mockCustomerRepository.Setup(r => r.ExistsAsync(createDto.CustomerId))
             .ReturnsAsync(true);
         _mockProductRepository.Setup(r => r.AddAsync(It.IsAny<Product>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
@@ -105,18 +105,18 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenUserDoesNotExist_ShouldThrowKeyNotFoundException()
+    public async Task CreateAsync_WhenCustomerDoesNotExist_ShouldThrowKeyNotFoundException()
     {
         // Arrange
         var createDto = TestDataBuilder.CreateValidProductDto("Test Product", 999);
 
-        _mockUserRepository.Setup(r => r.ExistsAsync(createDto.UserId))
+        _mockCustomerRepository.Setup(r => r.ExistsAsync(createDto.CustomerId))
             .ReturnsAsync(false);
 
         // Act & Assert
         var act = async () => await _productService.CreateAsync(createDto);
         await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("User with ID 999 not found.");
+            .WithMessage("Customer with ID 999 not found.");
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class ProductServiceTests
 
         _mockProductRepository.Setup(r => r.GetByIdAsync(productId))
             .ReturnsAsync(existingProduct);
-        _mockUserRepository.Setup(r => r.ExistsAsync(updateDto.UserId))
+        _mockCustomerRepository.Setup(r => r.ExistsAsync(updateDto.CustomerId))
             .ReturnsAsync(true);
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);

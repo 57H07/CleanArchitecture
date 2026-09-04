@@ -21,21 +21,21 @@ public class ProductRepository : IProductRepository
     public async Task<Product?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.User)
+            .Include(p => p.Customer)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 
     public async Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.User)
+            .Include(p => p.Customer)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<IPaginatedList<Product>> GetPagedAsync(ProductFilterDto filter, CancellationToken cancellationToken = default)
     {
         var query = _context.Products
-            .Include(p => p.User)
+            .Include(p => p.Customer)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
@@ -55,9 +55,9 @@ public class ProductRepository : IProductRepository
             query = query.Where(p => p.Status == filter.Status.Value);
         }
 
-        if (filter.UserId.HasValue)
+        if (filter.CustomerId.HasValue)
         {
-            query = query.Where(p => p.UserId == filter.UserId.Value);
+            query = query.Where(p => p.CustomerId == filter.CustomerId.Value);
         }
 
         var ascending = filter.SortOrder == SortOrder.Ascending;
@@ -77,18 +77,24 @@ public class ProductRepository : IProductRepository
         return await PaginatedList<Product>.CreateAsync(query, filter.Page, filter.PageSize, cancellationToken);
     }
 
-    public async Task<IEnumerable<Product>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
+    public async Task<bool> ExistsForCustomerAsync(int customerId, CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.User)
-            .Where(p => p.UserId == userId)
+            .AnyAsync(p => p.CustomerId == customerId, cancellationToken);
+    }
+
+    public async Task<IEnumerable<Product>> GetByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Products
+            .Include(p => p.Customer)
+            .Where(p => p.CustomerId == customerId)
             .ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Product>> GetByCategoryAsync(string category, CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.User)
+            .Include(p => p.Customer)
             .Where(p => p.Category == category)
             .ToListAsync(cancellationToken);
     }
@@ -96,7 +102,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetAvailableProductsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
-            .Include(p => p.User)
+            .Include(p => p.Customer)
             .Where(p => p.IsAvailable && p.StockQuantity > 0)
             .ToListAsync(cancellationToken);
     }

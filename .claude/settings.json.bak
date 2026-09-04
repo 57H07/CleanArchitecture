@@ -1,7 +1,6 @@
 {
   "enabledPlugins": {
-    "commit-message@stan": true,
-    "frontend-design@claude-plugins-official": true
+    "commit-message@stan": true
   },
   "extraKnownMarketplaces": {
     "stan": {

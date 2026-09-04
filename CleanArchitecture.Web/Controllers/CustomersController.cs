@@ -135,6 +135,10 @@ public class CustomersController : Controller
         {
             return NotFound(new { message = $"Customer with ID {id} was not found." });
         }
+        catch (BusinessRuleViolationException ex)
+        {
+            return UnprocessableEntity(new { message = ex.Message });
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting customer {CustomerId}", id);

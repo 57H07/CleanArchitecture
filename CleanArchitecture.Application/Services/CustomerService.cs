@@ -29,6 +29,12 @@ public class CustomerService : ICustomerService
         return customers.Adapt<IEnumerable<CustomerDto>>();
     }
 
+    public async Task<IEnumerable<CustomerDto>> GetActiveCustomersAsync(CancellationToken cancellationToken = default)
+    {
+        var customers = await _unitOfWork.Customers.GetActiveCustomersAsync(cancellationToken);
+        return customers.Adapt<IEnumerable<CustomerDto>>();
+    }
+
     public async Task<PagedResult<CustomerDto>> GetPagedAsync(CustomerFilterDto filter, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(filter);
@@ -83,6 +89,14 @@ public class CustomerService : ICustomerService
         if (!await _unitOfWork.Customers.ExistsAsync(id, cancellationToken))
         {
             throw new EntityNotFoundException("Customer", id);
+        }
+
+        // The Product -> Customer foreign key is configured with DeleteBehavior.Restrict,
+        // so surface the rule here instead of letting EF raise a raw constraint violation.
+        if (await _unitOfWork.Products.ExistsForCustomerAsync(id, cancellationToken))
+        {
+            throw new BusinessRuleViolationException(
+                "This customer still owns products and cannot be deleted. Reassign or delete the products first.");
         }
 
         await _unitOfWork.Customers.DeleteAsync(id, cancellationToken);

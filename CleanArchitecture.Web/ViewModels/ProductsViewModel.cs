@@ -14,7 +14,7 @@ public class ProductsViewModel
     // UI dropdowns
     public SelectList? AvailableCategories { get; set; }
     public SelectList? AvailableStatuses { get; set; }
-    public SelectList? AvailableUsers { get; set; }
+    public SelectList? AvailableCustomers { get; set; }
 
     // Pagination
     public int CurrentPage => Products.PageIndex;
@@ -67,7 +67,7 @@ public class ProductsViewModel
         if (!string.IsNullOrWhiteSpace(Filter.SearchTerm)) values["searchTerm"] = Filter.SearchTerm;
         if (!string.IsNullOrWhiteSpace(Filter.Category)) values["category"] = Filter.Category;
         if (Filter.Status.HasValue) values["status"] = Filter.Status.Value.ToString();
-        if (Filter.UserId.HasValue) values["userId"] = Filter.UserId.Value.ToString();
+        if (Filter.CustomerId.HasValue) values["customerId"] = Filter.CustomerId.Value.ToString();
 
         return values;
     }

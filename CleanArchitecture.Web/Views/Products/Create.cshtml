@@ -56,11 +56,11 @@
                         </div>
                         <div class="col-md-6">
                             <div class="form-group mb-4">
-                                <label asp-for="UserId" class="form-label"></label>
-                                <select asp-for="UserId" class="form-select" asp-items="ViewBag.UserId">
-                                    <option value="">Select a user</option>
+                                <label asp-for="CustomerId" class="form-label"></label>
+                                <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+                                    <option value="">Select a customer</option>
                                 </select>
-                                <span asp-validation-for="UserId" class="text-danger"></span>
+                                <span asp-validation-for="CustomerId" class="text-danger"></span>
                             </div>
                         </div>
                     </div>

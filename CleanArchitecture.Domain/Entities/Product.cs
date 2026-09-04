@@ -21,10 +21,10 @@ public class Product : BaseEntity
     public bool IsAvailable { get; set; } = true;
     
     // Foreign key
-    public int UserId { get; set; }
+    public int CustomerId { get; set; }
     
     // Navigation property
-    public virtual User User { get; set; } = null!;
+    public virtual Customer Customer { get; set; } = null!;
     
     // Domain methods
     public bool IsInStock() => StockQuantity > 0 && Status == ProductStatus.Active;

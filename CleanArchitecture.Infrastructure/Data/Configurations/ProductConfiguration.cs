@@ -42,6 +42,13 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(e => e.UpdatedBy)
             .HasMaxLength(100);
 
+        // A product belongs to a customer; deleting a customer that still owns
+        // products is refused rather than cascading the delete to them.
+        builder.HasOne(e => e.Customer)
+            .WithMany()
+            .HasForeignKey(e => e.CustomerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         // Seed data
         builder.HasData(
             new Product
@@ -54,7 +61,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Category = "Electronics",
                 Status = ProductStatus.Active,
                 IsAvailable = true,
-                UserId = 1,
+                CustomerId = 1,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             },
@@ -68,7 +75,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Category = "Electronics",
                 Status = ProductStatus.Active,
                 IsAvailable = true,
-                UserId = 1,
+                CustomerId = 1,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             },
@@ -82,7 +89,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 Category = "Furniture",
                 Status = ProductStatus.Draft,
                 IsAvailable = true,
-                UserId = 2,
+                CustomerId = 2,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = "System"
             }

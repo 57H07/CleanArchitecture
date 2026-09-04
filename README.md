@@ -1,6 +1,6 @@
 # Clean Architecture ASP.NET Core MVC Demo
 
-A practical demonstration of Clean Architecture principles in an ASP.NET Core MVC application featuring User, Product, and Customer management with modern web development practices, including an AJAX-driven, Bootstrap-modal CRUD flow for Customers.
+A practical demonstration of Clean Architecture principles in an ASP.NET Core MVC application featuring Product and Customer management with modern web development practices. Products demonstrate the pattern with fully server-rendered pages; Customers demonstrate the same CRUD through an AJAX-driven, Bootstrap-modal flow.
 
 ## 🏗️ Architecture
 
@@ -12,8 +12,8 @@ This template follows the Clean Architecture pattern with the following layers:
 CleanArchitecture/
 ├── CleanArchitecture.Domain/          # Core business entities and exceptions
 │   ├── Common/                        # Base entity class
-│   ├── Entities/                      # User, Product and Customer entities
-│   ├── Enums/                         # UserRole, ProductStatus
+│   ├── Entities/                      # Product and Customer entities
+│   ├── Enums/                         # ProductStatus
 │   └── Exceptions/                    # Domain exception hierarchy
 ├── CleanArchitecture.Application/     # Application services and contracts
 │   ├── Collections/                   # PagedResult<T> and mapping extensions
@@ -23,7 +23,7 @@ CleanArchitecture/
 │   ├── Exceptions/                   # Application-level exceptions
 │   ├── Interfaces/                   # Repository, service and IPaginatedList contracts
 │   ├── Mappings/                     # Mapster IRegister configurations
-│   └── Services/                     # Application services (User, Product & Customer)
+│   └── Services/                     # Application services (Product & Customer)
 ├── CleanArchitecture.Infrastructure/  # Data access and external concerns
 │   ├── Collections/                   # EF Core PaginatedList<T>
 │   ├── Data/                         # DbContext and entity configurations
@@ -31,7 +31,7 @@ CleanArchitecture/
 │   ├── DependencyInjection/          # AddInfrastructure() registration
 │   └── Repositories/                 # Repository and Unit of Work implementations
 ├── CleanArchitecture.Web/            # MVC presentation layer
-│   ├── Controllers/                   # Home, Users, Products, Customers controllers
+│   ├── Controllers/                   # Home, Products, Customers controllers
 │   ├── Middleware/                   # Global exception handling
 │   ├── Models/                       # ErrorViewModel, ToastMessage
 │   ├── ViewComponents/               # Pagination view component
@@ -58,7 +58,6 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 
 ### Domain Layer
 - **Base Entity**: Common properties for all entities (Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
-- **User Entity**: Complete user model with validation and relationships
 - **Product Entity**: Product model with pricing, inventory, and categorization
 - **Customer Entity**: Customer model (name, email, phone, company, notes, active flag) with `ValidateBusinessRules()` and `Activate`/`Deactivate` domain methods
 - **Domain Exceptions**: Exception hierarchy (`DomainException`, `RessourceNotFoundException`, `InsufficientRightsException`, `ValidationDomaineException`) that the Web layer maps to HTTP status codes
@@ -66,7 +65,7 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 ### Application Layer
 - **Repository Pattern**: Data access abstraction with interfaces
 - **Unit of Work**: Single entry point for repositories, `SaveChangesAsync` and explicit transactions
-- **Service Layer**: UserService, ProductService and CustomerService for business logic
+- **Service Layer**: ProductService and CustomerService for business logic
 - **DTOs**: Validated data transfer objects for Create/Update operations
 - **Pagination Contract**: `IPaginatedList<T>` and `PagedResult<T>` so no `IQueryable` leaks above Infrastructure; the `Page`/`PageSize` clamping shared by every `*FilterDto` lives in a common `PagedFilterDto` base class
 - **Cancellation**: Every service and repository method accepts and forwards a `CancellationToken`
@@ -77,11 +76,11 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 - **Separate Entity Configurations**: Individual configuration files for each entity
 - **Repository Implementation**: Concrete implementations of repository interfaces
 - **EF Pagination**: `PaginatedList<T>.CreateAsync` materializes one page from an `IQueryable`
-- **Database Seeding**: Pre-populated sample data for Users, Products and Customers via `HasData`
+- **Database Seeding**: Pre-populated sample data for Products and Customers via `HasData`
 - **Dependency Injection**: Clean service registration and configuration
 
 ### Web Layer
-- **MVC Controllers**: Home, Users, Products, and Customers controllers with full CRUD
+- **MVC Controllers**: Home, Products, and Customers controllers with full CRUD
 - **Razor Views**: Server-side rendered views with Bootstrap 5 styling
 - **Pagination**: Reusable `PaginationViewComponent` driven by `PaginationViewModel`
 - **Form Validation**: Client and server-side validation with error display
@@ -159,14 +158,10 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 
 The application includes pre-seeded data for demonstration:
 
-### Users
-- **John Doe** (john.doe@example.com) - Sample user with products
-- **Jane Smith** (jane.smith@example.com) - Sample user with products
-
 ### Products
-- **Laptop Computer** ($1,299.99) - Electronics category, owned by John Doe
-- **Wireless Mouse** ($29.99) - Electronics category, owned by John Doe  
-- **Office Chair** ($249.99) - Furniture category, owned by Jane Smith
+- **Laptop Computer** ($1,299.99) - Electronics category, owned by Alice Martin
+- **Wireless Mouse** ($29.99) - Electronics category, owned by Alice Martin
+- **Office Chair** ($249.99) - Furniture category, owned by Bruno Legrand
 
 ### Customers
 - **Alice Martin** (Northwind Traders) - Active
@@ -180,17 +175,14 @@ The application includes pre-seeded data for demonstration:
 
 ## 🎯 What This Application Demonstrates
 
-### User Management
-- **CRUD Operations**: Create, view, edit, and delete users
-- **Form Validation**: Required fields, email format, string length validation
-- **Data Relationships**: Users can own multiple products
-- **Responsive Interface**: Mobile-friendly user management interface
-
-### Product Management  
+### Product Management
+- **Server-Rendered CRUD**: Create, view, edit, and delete products through classic full-page Razor views
+- **Form Validation**: Required fields, ranges, and string length validation via Data Annotations
 - **Inventory System**: Products with stock quantities and availability status
 - **Categorization**: Products organized by categories (Electronics, Furniture, etc.)
 - **Pricing**: Decimal precision pricing with proper formatting
-- **User Assignment**: Products associated with specific users
+- **Customer Assignment**: Each product belongs to a customer — a foreign key rendered as a `SelectList` dropdown, eager-loaded with `.Include()`, and filterable from the list
+- **Server-Side Filtering & Sorting**: Search, category/status/customer filters, sortable columns and paging, all driven from the query string
 
 ### Customer Management
 - **AJAX Modal CRUD**: Create, edit and delete customers through a Bootstrap modal without a full-page reload; the table, sorting, and pagination are also refreshed via AJAX
@@ -217,7 +209,7 @@ The application includes pre-seeded data for demonstration:
 
 ### Adding New Entities
 
-Follow the established pattern demonstrated by the User, Product and Customer entities:
+Follow the established pattern demonstrated by the Product and Customer entities:
 
 1. **Create Domain Entity** in `CleanArchitecture.Domain/Entities/`
    - Inherit from `BaseEntity` for common properties

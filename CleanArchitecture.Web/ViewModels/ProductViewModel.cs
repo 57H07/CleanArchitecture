@@ -42,13 +42,13 @@ public class ProductViewModel
     [Display(Name = "Product Status")]
     public ProductStatus Status { get; set; }
     
-    [Required(ErrorMessage = "User is required")]
-    [Display(Name = "Assigned User")]
-    public int UserId { get; set; }
+    [Required(ErrorMessage = "Customer is required")]
+    [Display(Name = "Assigned Customer")]
+    public int CustomerId { get; set; }
     
     // UI-specific properties that don't exist in DTOs
-    [Display(Name = "Available Users")]
-    public SelectList? AvailableUsers { get; set; }
+    [Display(Name = "Available Customers")]
+    public SelectList? AvailableCustomers { get; set; }
     
     [Display(Name = "Available Categories")]
     public SelectList? AvailableCategories { get; set; }

@@ -1,14 +1,15 @@
 {
   "version": 1,
   "generatedBy": "stan-skills@0.1.4",
-  "generatedAt": "2026-09-04T07:45:07.347Z",
+  "generatedAt": "2026-09-04T10:26:36.592Z",
   "scope": "project",
   "preset": null,
   "detected": [
     "any-code"
   ],
   "plugins": [
-    "commit-message@stan"
+    "commit-message@stan",
+    "frontend-design@claude-plugins-official"
   ],
   "marketplacesAdded": [
     "stan"

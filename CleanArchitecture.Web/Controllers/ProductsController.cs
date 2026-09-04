@@ -12,16 +12,16 @@ namespace CleanArchitecture.Web.Controllers;
 public class ProductsController : Controller
 {
     private readonly IProductService _productService;
-    private readonly IUserService _userService;
+    private readonly ICustomerService _customerService;
     private readonly ILogger<ProductsController> _logger;
 
     public ProductsController(
         IProductService productService, 
-        IUserService userService, 
+        ICustomerService customerService, 
         ILogger<ProductsController> logger)
     {
         _productService = productService;
-        _userService = userService;
+        _customerService = customerService;
         _logger = logger;
     }
 
@@ -70,7 +70,7 @@ public class ProductsController : Controller
     // GET: Products/Create
     public async Task<IActionResult> Create()
     {
-        await PopulateUsersDropDown();
+        await PopulateCustomersDropDown();
         return View();
     }
 
@@ -89,7 +89,7 @@ public class ProductsController : Controller
             }
             catch (KeyNotFoundException ex)
             {
-                ModelState.AddModelError("UserId", ex.Message);
+                ModelState.AddModelError("CustomerId", ex.Message);
             }
             catch (Exception ex)
             {
@@ -98,7 +98,7 @@ public class ProductsController : Controller
             }
         }
         
-        await PopulateUsersDropDown();
+        await PopulateCustomersDropDown();
         return View(createProductDto);
     }
 
@@ -120,10 +120,10 @@ public class ProductsController : Controller
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
                 Category = product.Category,
-                UserId = product.UserId
+                CustomerId = product.CustomerId
             };
 
-            await PopulateUsersDropDown();
+            await PopulateCustomersDropDown();
             return View(editDto);
         }
         catch (Exception ex)
@@ -153,7 +153,7 @@ public class ProductsController : Controller
                 {
                     return NotFound();
                 }
-                ModelState.AddModelError("UserId", ex.Message);
+                ModelState.AddModelError("CustomerId", ex.Message);
             }
             catch (Exception ex)
             {
@@ -162,7 +162,7 @@ public class ProductsController : Controller
             }
         }
         
-        await PopulateUsersDropDown();
+        await PopulateCustomersDropDown();
         return View(updateProductDto);
     }
 
@@ -227,8 +227,8 @@ public class ProductsController : Controller
                 .Select(s => new { Value = s.ToString(), Text = s.ToString() });
             viewModel.AvailableStatuses = new SelectList(statuses, "Value", "Text", filter.Status?.ToString());
 
-            var users = await _userService.GetActiveUsersAsync();
-            viewModel.AvailableUsers = new SelectList(users, "Id", "FullName", filter.UserId);
+            var customers = await _customerService.GetActiveCustomersAsync();
+            viewModel.AvailableCustomers = new SelectList(customers, "Id", "Name", filter.CustomerId);
         }
         catch (Exception ex)
         {
@@ -238,17 +238,17 @@ public class ProductsController : Controller
         return viewModel;
     }
 
-    private async Task PopulateUsersDropDown()
+    private async Task PopulateCustomersDropDown()
     {
         try
         {
-            var users = await _userService.GetActiveUsersAsync();
-            ViewBag.Users = new SelectList(users, "Id", "FullName");
+            var customers = await _customerService.GetActiveCustomersAsync();
+            ViewBag.Customers = new SelectList(customers, "Id", "Name");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error occurred while loading users for dropdown");
-            ViewBag.Users = new SelectList(new List<UserDto>(), "Id", "FullName");
+            _logger.LogError(ex, "Error occurred while loading customers for dropdown");
+            ViewBag.Customers = new SelectList(new List<CustomerDto>(), "Id", "Name");
         }
     }
 }

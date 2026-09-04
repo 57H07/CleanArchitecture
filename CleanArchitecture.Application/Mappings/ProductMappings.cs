@@ -10,7 +10,7 @@ public class ProductMappings : IRegister
     {
         TypeAdapterConfig<Product, ProductDto>.NewConfig()
             .Map(dest => dest.IsInStock, src => src.IsInStock())
-            .Map(dest => dest.UserName, src => src.User != null ? src.User.GetFullName() : string.Empty);
+            .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.Name : string.Empty);
 
         TypeAdapterConfig<CreateProductDto, Product>.NewConfig()
             .IgnoreNullValues(true);

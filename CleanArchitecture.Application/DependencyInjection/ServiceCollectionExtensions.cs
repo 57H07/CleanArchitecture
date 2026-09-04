@@ -17,7 +17,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMapper, ServiceMapper>();
 
         // Add application services
-        services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<ICustomerService, CustomerService>();
 

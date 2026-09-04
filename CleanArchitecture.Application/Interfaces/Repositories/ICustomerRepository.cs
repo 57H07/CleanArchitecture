@@ -8,6 +8,7 @@ public interface ICustomerRepository
 {
     Task<Customer?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Customer>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<Customer>> GetActiveCustomersAsync(CancellationToken cancellationToken = default);
     Task<IPaginatedList<Customer>> GetPagedAsync(CustomerFilterDto filter, CancellationToken cancellationToken = default);
     Task<bool> ExistsByEmailAsync(string email, int? excludeId = null, CancellationToken cancellationToken = default);
     Task AddAsync(Customer customer, CancellationToken cancellationToken = default);

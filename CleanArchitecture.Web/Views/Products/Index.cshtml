@@ -32,9 +32,9 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label" for="userId">Owner</label>
-                <select class="form-select" id="userId" name="userId" asp-items="Model.AvailableUsers">
-                    <option value="">All owners</option>
+                <label class="form-label" for="customerId">Customer</label>
+                <select class="form-select" id="customerId" name="customerId" asp-items="Model.AvailableCustomers">
+                    <option value="">All customers</option>
                 </select>
             </div>
             <div class="col-md-2">
@@ -89,7 +89,7 @@
                                 </a>
                             </th>
                             <th>Stock</th>
-                            <th>Owner</th>
+                            <th>Customer</th>
                             <th>Status</th>
                             <th>
                                 <a asp-action="Index" asp-all-route-data="Model.GetSortRouteValues(ProductSortBy.CreatedDate)" class="text-white text-decoration-none">
@@ -133,7 +133,7 @@
                                         <span class="badge bg-danger">Out of stock</span>
                                     }
                                 </td>
-                                <td>@product.UserName</td>
+                                <td>@product.CustomerName</td>
                                 <td>
                                     @if (product.IsAvailable)
                                     {

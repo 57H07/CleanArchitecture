@@ -7,7 +7,7 @@ public class ProductLaunchRequestDto
     public string Description { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public decimal BasePrice { get; set; }
-    public int UserId { get; set; }
+    public int CustomerId { get; set; }
     public DateTime LaunchDate { get; set; }
     public PricingStrategyDto PricingStrategy { get; set; } = new();
     public List<InventoryDistributionDto> InventoryDistribution { get; set; } = new();

@@ -28,7 +28,7 @@ public class CreateProductDto
     [Display(Name = "Status")]
     public ProductStatus Status { get; set; } = ProductStatus.Draft;
     
-    [Required(ErrorMessage = "User is required")]
-    [Display(Name = "User")]
-    public int UserId { get; set; }
+    [Required(ErrorMessage = "Customer is required")]
+    [Display(Name = "Customer")]
+    public int CustomerId { get; set; }
 }

@@ -11,14 +11,17 @@ public class CustomerServiceTests
 {
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<ICustomerRepository> _mockCustomerRepository;
+    private readonly Mock<IProductRepository> _mockProductRepository;
     private readonly CustomerService _customerService;
 
     public CustomerServiceTests()
     {
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockCustomerRepository = new Mock<ICustomerRepository>();
+        _mockProductRepository = new Mock<IProductRepository>();
 
         _mockUnitOfWork.Setup(u => u.Customers).Returns(_mockCustomerRepository.Object);
+        _mockUnitOfWork.Setup(u => u.Products).Returns(_mockProductRepository.Object);
 
         _customerService = new CustomerService(_mockUnitOfWork.Object);
     }
@@ -124,6 +127,8 @@ public class CustomerServiceTests
     {
         _mockCustomerRepository.Setup(r => r.ExistsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
+        _mockProductRepository.Setup(r => r.ExistsForCustomerAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
 
         await _customerService.DeleteAsync(1);
 
@@ -140,5 +145,19 @@ public class CustomerServiceTests
         Func<Task> act = () => _customerService.DeleteAsync(999);
 
         await act.Should().ThrowAsync<EntityNotFoundException>();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenCustomerStillOwnsProducts_ShouldThrowBusinessRuleViolationException()
+    {
+        _mockCustomerRepository.Setup(r => r.ExistsAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        _mockProductRepository.Setup(r => r.ExistsForCustomerAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        Func<Task> act = () => _customerService.DeleteAsync(1);
+
+        await act.Should().ThrowAsync<BusinessRuleViolationException>();
+        _mockCustomerRepository.Verify(r => r.DeleteAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

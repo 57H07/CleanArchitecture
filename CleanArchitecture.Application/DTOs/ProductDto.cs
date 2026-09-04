@@ -38,12 +38,12 @@ public class ProductDto
     [Display(Name = "In Stock")]
     public bool IsInStock { get; set; }
     
-    [Required(ErrorMessage = "User is required")]
-    [Display(Name = "User")]
-    public int UserId { get; set; }
+    [Required(ErrorMessage = "Customer is required")]
+    [Display(Name = "Customer")]
+    public int CustomerId { get; set; }
     
-    [Display(Name = "User")]
-    public string UserName { get; set; } = string.Empty;
+    [Display(Name = "Customer")]
+    public string CustomerName { get; set; } = string.Empty;
     
     public DateTime CreatedAt { get; set; }
     

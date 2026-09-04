@@ -2,7 +2,6 @@ namespace CleanArchitecture.Application.Interfaces.Repositories;
 
 public interface IUnitOfWork : IDisposable, IAsyncDisposable
 {
-    IUserRepository Users { get; }
     IProductRepository Products { get; }
     ICustomerRepository Customers { get; }
     
