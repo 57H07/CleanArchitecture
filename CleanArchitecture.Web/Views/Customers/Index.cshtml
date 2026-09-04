@@ -1,0 +1,71 @@
+@model CleanArchitecture.Web.ViewModels.CustomersViewModel
+
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+    <button type="button" class="btn btn-primary" id="customerCreateBtn">
+        <i class="bi bi-plus-circle"></i> New Customer
+    </button>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="customerFilterForm" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label" for="searchTerm">Search</label>
+                <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.Filter.SearchTerm" placeholder="Name, email or company" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="isActive">Status</label>
+                <select class="form-select" id="isActive" name="isActive">
+                    <option value="">All statuses</option>
+                    <option value="true" selected="@(Model.Filter.IsActive == true)">Active</option>
+                    <option value="false" selected="@(Model.Filter.IsActive == false)">Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label" for="pageSize">Page size</label>
+                <select class="form-select" id="pageSize" name="pageSize">
+                    @foreach (var size in new[] { 5, 10, 25, 50 })
+                    {
+                        <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+
+            <input type="hidden" name="sortBy" value="@Model.Filter.SortBy" />
+            <input type="hidden" name="sortOrder" value="@Model.Filter.SortOrder" />
+
+            @if (Model.Filter.HasActiveFilters)
+            {
+                <div class="col-12">
+                    <a href="/Customers" class="btn btn-sm btn-link px-0">
+                        <i class="bi bi-x-circle"></i> Clear filters
+                    </a>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div id="customerTableWrapper">
+            @await Html.PartialAsync("_CustomerTable", Model)
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_CustomerModal")
+
+@section Scripts {
+    <script type="module" src="~/js/customers.js" asp-append-version="true"></script>
+}

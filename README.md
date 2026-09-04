@@ -1,6 +1,6 @@
 # Clean Architecture ASP.NET Core MVC Demo
 
-A practical demonstration of Clean Architecture principles in an ASP.NET Core MVC application featuring User and Product management with modern web development practices.
+A practical demonstration of Clean Architecture principles in an ASP.NET Core MVC application featuring User, Product, and Customer management with modern web development practices, including an AJAX-driven, Bootstrap-modal CRUD flow for Customers.
 
 ## 🏗️ Architecture
 
@@ -12,7 +12,7 @@ This template follows the Clean Architecture pattern with the following layers:
 CleanArchitecture/
 ├── CleanArchitecture.Domain/          # Core business entities and exceptions
 │   ├── Common/                        # Base entity class
-│   ├── Entities/                      # User and Product entities
+│   ├── Entities/                      # User, Product and Customer entities
 │   ├── Enums/                         # UserRole, ProductStatus
 │   └── Exceptions/                    # Domain exception hierarchy
 ├── CleanArchitecture.Application/     # Application services and contracts
@@ -23,7 +23,7 @@ CleanArchitecture/
 │   ├── Exceptions/                   # Application-level exceptions
 │   ├── Interfaces/                   # Repository, service and IPaginatedList contracts
 │   ├── Mappings/                     # Mapster IRegister configurations
-│   └── Services/                     # Application services (User & Product)
+│   └── Services/                     # Application services (User, Product & Customer)
 ├── CleanArchitecture.Infrastructure/  # Data access and external concerns
 │   ├── Collections/                   # EF Core PaginatedList<T>
 │   ├── Data/                         # DbContext and entity configurations
@@ -31,13 +31,14 @@ CleanArchitecture/
 │   ├── DependencyInjection/          # AddInfrastructure() registration
 │   └── Repositories/                 # Repository and Unit of Work implementations
 ├── CleanArchitecture.Web/            # MVC presentation layer
-│   ├── Controllers/                   # Home, Users, Products controllers
+│   ├── Controllers/                   # Home, Users, Products, Customers controllers
 │   ├── Middleware/                   # Global exception handling
 │   ├── Models/                       # ErrorViewModel, ToastMessage
 │   ├── ViewComponents/               # Pagination view component
 │   ├── ViewModels/                   # List and paging view models
 │   ├── Views/                        # Razor views with Bootstrap UI
-│   └── wwwroot/                      # Static assets (CSS, JS, libraries)
+│   └── wwwroot/                      # Static assets, including reusable JS helpers
+│       └── js/Helpers/               # ajax.js (fetch + antiforgery + validation) and toast.js (Bootstrap toasts)
 └── CleanArchitecture.Application.Tests/  # xUnit tests for application services
 ```
 
@@ -59,14 +60,15 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 - **Base Entity**: Common properties for all entities (Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
 - **User Entity**: Complete user model with validation and relationships
 - **Product Entity**: Product model with pricing, inventory, and categorization
+- **Customer Entity**: Customer model (name, email, phone, company, notes, active flag) with `ValidateBusinessRules()` and `Activate`/`Deactivate` domain methods
 - **Domain Exceptions**: Exception hierarchy (`DomainException`, `RessourceNotFoundException`, `InsufficientRightsException`, `ValidationDomaineException`) that the Web layer maps to HTTP status codes
 
 ### Application Layer
 - **Repository Pattern**: Data access abstraction with interfaces
 - **Unit of Work**: Single entry point for repositories, `SaveChangesAsync` and explicit transactions
-- **Service Layer**: UserService and ProductService for business logic
+- **Service Layer**: UserService, ProductService and CustomerService for business logic
 - **DTOs**: Validated data transfer objects for Create/Update operations
-- **Pagination Contract**: `IPaginatedList<T>` and `PagedResult<T>` so no `IQueryable` leaks above Infrastructure
+- **Pagination Contract**: `IPaginatedList<T>` and `PagedResult<T>` so no `IQueryable` leaks above Infrastructure; the `Page`/`PageSize` clamping shared by every `*FilterDto` lives in a common `PagedFilterDto` base class
 - **Cancellation**: Every service and repository method accepts and forwards a `CancellationToken`
 - **Mapster Integration**: `IRegister` mapping classes discovered by assembly scan
 
@@ -75,14 +77,17 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 - **Separate Entity Configurations**: Individual configuration files for each entity
 - **Repository Implementation**: Concrete implementations of repository interfaces
 - **EF Pagination**: `PaginatedList<T>.CreateAsync` materializes one page from an `IQueryable`
-- **Database Seeding**: Pre-populated sample data for Users and Products via `HasData`
+- **Database Seeding**: Pre-populated sample data for Users, Products and Customers via `HasData`
 - **Dependency Injection**: Clean service registration and configuration
 
 ### Web Layer
-- **MVC Controllers**: Home, Users, and Products controllers with full CRUD
+- **MVC Controllers**: Home, Users, Products, and Customers controllers with full CRUD
 - **Razor Views**: Server-side rendered views with Bootstrap 5 styling
 - **Pagination**: Reusable `PaginationViewComponent` driven by `PaginationViewModel`
 - **Form Validation**: Client and server-side validation with error display
+- **AJAX Modal CRUD**: The Customers screen renders its filterable/sortable table and Bootstrap create/edit/delete modals without full-page navigation, using two generic, reusable `wwwroot/js/Helpers` modules:
+  - `ajax.js` — a small `fetch` wrapper that reads the Razor antiforgery token off any form (or the page) and sends it as the `RequestVerificationToken` header, serializes plain objects or `<form>`s (`FormData`), and distinguishes JSON error payloads from the Development exception page. `applyValidationErrors(form, errors)` maps a ModelState-shaped error dictionary onto `asp-validation-for` spans, mimicking unobtrusive validation without jQuery.
+  - `toast.js` — builds/shows Bootstrap toasts for all four semantic variants (`Toast.success/error/warning/info`), and can also drive a toast Razor already rendered from `TempData` via `Toast.showExisting(el)`.
 - **Global Exception Handling**: Middleware maps domain exceptions to 404/403/409/422, returns JSON for AJAX requests and a toast + redirect otherwise (active outside Development only)
 - **Responsive UI**: Mobile-friendly interface with Bootstrap components
 
@@ -110,7 +115,7 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
    ```
 
 3. **Update connection string** (if needed)
-   Edit `CleanArchitecture.Web/appsettings.json`:
+   The default in `CleanArchitecture.Web/appsettings.json` targets SQL Server LocalDB:
    ```json
    {
      "ConnectionStrings": {
@@ -118,6 +123,12 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
      }
    }
    ```
+   To point Development at a different server (e.g. a local Docker SQL Server container) **without** committing credentials, use [.NET User Secrets](https://learn.microsoft.com/aspnet/core/security/app-secrets) instead of editing `appsettings.Development.json`:
+   ```bash
+   dotnet user-secrets init --project CleanArchitecture.Web
+   dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,1433;Database=CleanArchitectureDb;User Id=sa;Password=<your-password>;TrustServerCertificate=true;MultipleActiveResultSets=true" --project CleanArchitecture.Web
+   ```
+   User secrets are only loaded in the Development environment and are stored outside the repository.
 
 4. **Build the solution**
    ```bash
@@ -132,7 +143,7 @@ Dependency direction is strict: Domain ← Application ← Infrastructure ← We
 6. **Run the tests**
    ```bash
    dotnet test
-   dotnet test --filter "FullyQualifiedName~ProductServiceTests"   # one test class
+   dotnet test --filter "FullyQualifiedName~CustomerServiceTests"   # one test class
    ```
 
 ### Upgrading the .NET version
@@ -157,6 +168,11 @@ The application includes pre-seeded data for demonstration:
 - **Wireless Mouse** ($29.99) - Electronics category, owned by John Doe  
 - **Office Chair** ($249.99) - Furniture category, owned by Jane Smith
 
+### Customers
+- **Alice Martin** (Northwind Traders) - Active
+- **Bruno Legrand** (Contoso Ltd) - Active
+- **Chloe Dubois** (Adventure Works) - Inactive, with notes
+
 ### Database
 - Uses SQL Server LocalDB for development
 - No EF migrations: on **every startup** `Program.cs` calls `EnsureDeleted()` then `EnsureCreated()`, so the database is dropped, recreated from the model and reseeded
@@ -175,6 +191,12 @@ The application includes pre-seeded data for demonstration:
 - **Categorization**: Products organized by categories (Electronics, Furniture, etc.)
 - **Pricing**: Decimal precision pricing with proper formatting
 - **User Assignment**: Products associated with specific users
+
+### Customer Management
+- **AJAX Modal CRUD**: Create, edit and delete customers through a Bootstrap modal without a full-page reload; the table, sorting, and pagination are also refreshed via AJAX
+- **Server-Side Filtering & Sorting**: Search by name/email/company, filter by active status, sort by name/company/created date — mirrors the Products list's query-string-driven approach
+- **Inline Field Validation**: ModelState and domain validation errors (e.g. duplicate email) are rendered directly on the offending form field, no page reload
+- **Reusable JS Helpers**: The `ajax.js` and `toast.js` helpers used here are generic enough to drive the same modal-CRUD pattern for any future entity
 
 ### Technical Demonstrations
 - **Clean Architecture**: Proper separation of concerns across layers
@@ -195,7 +217,7 @@ The application includes pre-seeded data for demonstration:
 
 ### Adding New Entities
 
-Follow the established pattern demonstrated by User and Product entities:
+Follow the established pattern demonstrated by the User, Product and Customer entities:
 
 1. **Create Domain Entity** in `CleanArchitecture.Domain/Entities/`
    - Inherit from `BaseEntity` for common properties

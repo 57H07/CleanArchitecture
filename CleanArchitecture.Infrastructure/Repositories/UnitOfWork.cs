@@ -13,16 +13,19 @@ public class UnitOfWork : IUnitOfWork
     public UnitOfWork(
         ApplicationDbContext context,
         IProductRepository products,
-        IUserRepository users
+        IUserRepository users,
+        ICustomerRepository customers
     )
     {
         _context = context;
         Users = users;
         Products = products;
+        Customers = customers;
     }
 
     public IUserRepository Users { get; }
     public IProductRepository Products { get; }
+    public ICustomerRepository Customers { get; }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {

@@ -8,7 +8,7 @@
 </div>
 
 <div class="row mt-5">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-body text-center">
                 <i class="bi bi-people-fill display-4 text-primary mb-3"></i>
@@ -20,7 +20,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card h-100">
             <div class="card-body text-center">
                 <i class="bi bi-box-seam-fill display-4 text-success mb-3"></i>
@@ -28,6 +28,18 @@
                 <p class="card-text">Manage products with inventory tracking, categories, and user relationships.</p>
                 <a asp-controller="Products" asp-action="Index" class="btn btn-success">
                     <i class="bi bi-arrow-right"></i> Manage Products
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-person-vcard-fill display-4 mb-3" style="color:#6f42c1;"></i>
+                <h4 class="card-title">Customer Directory</h4>
+                <p class="card-text">Manage customers through an AJAX-driven Bootstrap modal, with filtering, sorting, and paging.</p>
+                <a asp-controller="Customers" asp-action="Index" class="btn" style="background-color:#6f42c1;color:#fff;">
+                    <i class="bi bi-arrow-right"></i> Manage Customers
                 </a>
             </div>
         </div>
@@ -54,7 +66,7 @@
                     <div class="col-md-3">
                         <h6><i class="bi bi-gear-fill text-info"></i> Technologies</h6>
                         <ul class="list-unstyled">
-                            <li>• ASP.NET Core 9.0</li>
+                            <li>• ASP.NET Core 10.0</li>
                             <li>• Entity Framework Core</li>
                             <li>• Mapster Mapping</li>
                             <li>• Bootstrap 5</li>
@@ -73,6 +85,7 @@
                         <h6><i class="bi bi-shield-check text-warning"></i> Features</h6>
                         <ul class="list-unstyled">
                             <li>• Form Validation</li>
+                            <li>• AJAX Modal CRUD</li>
                             <li>• Error Handling</li>
                             <li>• Responsive UI</li>
                             <li>• Database Seeding</li>

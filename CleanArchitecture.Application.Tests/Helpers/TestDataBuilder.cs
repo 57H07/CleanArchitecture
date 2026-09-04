@@ -136,4 +136,41 @@ public static class TestDataBuilder
         dto.Email = invalidEmail;
         return dto;
     }
+
+    public static Customer CreateValidCustomer(int id = 1)
+    {
+        return new Customer
+        {
+            Id = id,
+            Name = $"Test Customer {id}",
+            Email = $"customer.{id}@example.com",
+            Phone = "+1234567890",
+            Company = "Test Company",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = "Test"
+        };
+    }
+
+    public static List<Customer> CreateCustomerList(int count = 3)
+    {
+        var customers = new List<Customer>();
+        for (int i = 1; i <= count; i++)
+        {
+            customers.Add(CreateValidCustomer(i));
+        }
+        return customers;
+    }
+
+    public static CreateCustomerDto CreateValidCustomerDto(string name = "New Customer", string? email = null)
+    {
+        return new CreateCustomerDto
+        {
+            Name = name,
+            Email = email ?? $"{name.Replace(" ", ".").ToLower()}@example.com",
+            Phone = "+1234567890",
+            Company = "Test Company",
+            IsActive = true
+        };
+    }
 }

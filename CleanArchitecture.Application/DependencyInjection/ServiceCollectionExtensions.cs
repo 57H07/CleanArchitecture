@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         // Add application services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProductService, ProductService>();
+        services.AddScoped<ICustomerService, CustomerService>();
 
         return services;
     }
