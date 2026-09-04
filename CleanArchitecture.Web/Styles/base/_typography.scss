@@ -1,0 +1,39 @@
+body {
+  font-size: .9375rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -.011em;
+  color: var(--app-ink);
+}
+
+h1 { font-size: 1.5rem; }
+h2 { font-size: 1.125rem; }
+h3 { font-size: 1.0625rem; }
+h4, h5, h6 { font-size: 1rem; }
+
+.text-muted,
+.text-secondary { color: var(--app-muted) !important; }
+
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+code { color: var(--app-accent); }
+
+dl.detail-list {
+  margin-bottom: 0;
+  font-size: .875rem;
+
+  dt {
+    font-weight: 500;
+    color: var(--app-muted);
+  }
+}

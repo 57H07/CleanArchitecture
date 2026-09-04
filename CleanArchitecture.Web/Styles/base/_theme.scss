@@ -1,0 +1,67 @@
+:root {
+  --app-page:            #F5F6F6;
+  --app-panel:           #FFFFFF;
+  --app-hairline:        #E3E6E6;
+  --app-ink:             #15191A;
+  --app-muted:           #5A6467;
+  --app-row-hover:       #F1F3F3;
+
+  --app-accent:          #B5451F;
+  --app-accent-hover:    #94360F;
+  --app-accent-tint:     #FBEAE3;
+  --app-on-accent:       #FFFFFF;
+
+  --app-positive:        #1F6B45;
+  --app-positive-tint:   #E6F1EA;
+  --app-caution:         #7E5310;
+  --app-caution-tint:    #F5EEDE;
+  --app-danger:          #A32A28;
+  --app-danger-tint:     #F7E8E7;
+  --app-on-danger:       #FFFFFF;
+
+  --app-overlay-shadow:  0 10px 30px rgba(10, 20, 20, .14);
+
+  // Remapped onto the tokens above so stock components need no overrides.
+  --bs-body-bg:                   var(--app-page);
+  --bs-body-color:                var(--app-ink);
+  --bs-emphasis-color:            var(--app-ink);
+  --bs-secondary-color:           var(--app-muted);
+  --bs-secondary-bg:              var(--app-row-hover);
+  --bs-tertiary-bg:               var(--app-row-hover);
+  --bs-border-color:              var(--app-hairline);
+  --bs-border-color-translucent:  var(--app-hairline);
+  --bs-primary:                   var(--app-accent);
+  --bs-primary-rgb:               181, 69, 31;
+  --bs-link-color:                var(--app-accent);
+  --bs-link-hover-color:          var(--app-accent-hover);
+  --bs-border-radius:             .375rem;
+  --bs-border-radius-sm:          .3125rem;
+  --bs-border-radius-lg:          .5rem;
+  --bs-form-invalid-color:        var(--app-danger);
+  --bs-form-invalid-border-color: var(--app-danger);
+}
+
+[data-bs-theme="dark"] {
+  --app-page:            #111414;
+  --app-panel:           #181C1D;
+  --app-hairline:        #2A3031;
+  --app-ink:             #E7EBEA;
+  --app-muted:           #96A0A0;
+  --app-row-hover:       #1E2324;
+
+  --app-accent:          #E8703F;
+  --app-accent-hover:    #F28B5E;
+  --app-accent-tint:     #3A1C11;
+  --app-on-accent:       #1A0A04;
+
+  --app-positive:        #5FBF8C;
+  --app-positive-tint:   #14261D;
+  --app-caution:         #D9A441;
+  --app-caution-tint:    #2A2316;
+  --app-danger:          #E8807E;
+  --app-danger-tint:     #2D1B1B;
+  --app-on-danger:       #24100F;
+
+  --app-overlay-shadow:  0 10px 30px rgba(0, 0, 0, .5);
+  --bs-primary-rgb:      232, 112, 63;
+}

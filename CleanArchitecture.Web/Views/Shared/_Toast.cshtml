@@ -1,4 +1,4 @@
-@{
+﻿@{
     string toastHeader = string.Empty;
     string toastMessage = string.Empty;
     string toastIcon = string.Empty;
@@ -34,12 +34,14 @@
 
         if (!string.IsNullOrEmpty(succesBrut))
         {
+            toastHeader = "Success";
             toastMessage = succesBrut;
             toastIcon = "bi-check-circle-fill";
             toastColor = "success";
         }
         else if (!string.IsNullOrEmpty(erreurBrut))
         {
+            toastHeader = "Error";
             toastMessage = erreurBrut;
             toastIcon = "bi-exclamation-triangle-fill";
             toastColor = "danger";
@@ -50,9 +52,9 @@
 @if (!String.IsNullOrEmpty(toastMessage))
 {
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100">
-        <div id="infoToast" class="toast border-@toastColor" role="alert" aria-live="assertive" aria-atomic="true">
+        <div id="infoToast" class="toast toast--@toastColor" role="alert" aria-live="assertive" aria-atomic="true">
 
-            <div class="toast-header text-bg-@toastColor">
+            <div class="toast-header">
                 <i class="bi @toastIcon me-2"></i>
                 <strong class="me-auto">@toastHeader</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="toast"></button>

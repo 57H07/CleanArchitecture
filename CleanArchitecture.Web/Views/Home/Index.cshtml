@@ -2,88 +2,54 @@
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Clean Architecture Demo</h1>
-    <p class="lead">A comprehensive ASP.NET Core MVC template following Clean Architecture and DDD principles</p>
+<div class="page-head">
+    <h1>Clean Architecture Demo</h1>
 </div>
 
-<div class="row mt-5">
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-box-seam-fill display-4 text-success mb-3"></i>
-                <h4 class="card-title">Product Catalog</h4>
-                <p class="card-text">Manage products with inventory tracking, categories, and customer relationships.</p>
-                <a asp-controller="Products" asp-action="Index" class="btn btn-success">
-                    <i class="bi bi-arrow-right"></i> Manage Products
-                </a>
-            </div>
-        </div>
+<p class="text-muted prose mb-4">
+    An ASP.NET Core MVC reference application built on a strict Domain → Application → Infrastructure → Web
+    dependency direction. Pick a directory to work in.
+</p>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <a asp-controller="Products" asp-action="Index" class="panel panel-link panel-pad d-block h-100 text-decoration-none">
+            <h2 class="mb-1">Products</h2>
+            <p class="text-muted mb-0" style="font-size: .875rem">
+                Catalogue with stock levels, categories and customer ownership. Filtered, sorted and paged on the server.
+            </p>
+        </a>
     </div>
-    <div class="col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-person-vcard-fill display-4 mb-3" style="color:#6f42c1;"></i>
-                <h4 class="card-title">Customer Directory</h4>
-                <p class="card-text">Manage customers through an AJAX-driven Bootstrap modal, with filtering, sorting, and paging.</p>
-                <a asp-controller="Customers" asp-action="Index" class="btn" style="background-color:#6f42c1;color:#fff;">
-                    <i class="bi bi-arrow-right"></i> Manage Customers
-                </a>
-            </div>
-        </div>
+    <div class="col-md-6">
+        <a asp-controller="Customers" asp-action="Index" class="panel panel-link panel-pad d-block h-100 text-decoration-none">
+            <h2 class="mb-1">Customers</h2>
+            <p class="text-muted mb-0" style="font-size: .875rem">
+                Directory edited in place through a modal, without leaving the list.
+            </p>
+        </a>
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Architecture Features</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <h6><i class="bi bi-layers text-primary"></i> Clean Architecture</h6>
-                        <ul class="list-unstyled">
-                            <li>• Domain Layer</li>
-                            <li>• Application Layer</li>
-                            <li>• Infrastructure Layer</li>
-                            <li>• Presentation Layer</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <h6><i class="bi bi-gear-fill text-info"></i> Technologies</h6>
-                        <ul class="list-unstyled">
-                            <li>• ASP.NET Core 10.0</li>
-                            <li>• Entity Framework Core</li>
-                            <li>• Mapster Mapping</li>
-                            <li>• Bootstrap 5</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <h6><i class="bi bi-check-circle-fill text-success"></i> Best Practices</h6>
-                        <ul class="list-unstyled">
-                            <li>• Repository Pattern</li>
-                            <li>• Unit of Work</li>
-                            <li>• Domain Events</li>
-                            <li>• SOLID Principles</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-3">
-                        <h6><i class="bi bi-shield-check text-warning"></i> Features</h6>
-                        <ul class="list-unstyled">
-                            <li>• Form Validation</li>
-                            <li>• AJAX Modal CRUD</li>
-                            <li>• Error Handling</li>
-                            <li>• Responsive UI</li>
-                            <li>• Database Seeding</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="panel">
+    <div class="panel-head">
+        <h2>How it is put together</h2>
+    </div>
+    <div class="panel-pad">
+        <dl class="row detail-list">
+            <dt class="col-sm-3">Layers</dt>
+            <dd class="col-sm-9 mb-3">Domain, Application, Infrastructure and Web, each registering itself through one extension method.</dd>
+
+            <dt class="col-sm-3">Data access</dt>
+            <dd class="col-sm-9 mb-3">A single unit of work exposing the repositories; the service owns the save.</dd>
+
+            <dt class="col-sm-3">Pagination</dt>
+            <dd class="col-sm-9 mb-3">Pages are materialised in Infrastructure, so no <code>IQueryable</code> ever reaches the Application layer.</dd>
+
+            <dt class="col-sm-3">Mapping</dt>
+            <dd class="col-sm-9 mb-3">Mapster, with registrations scanned from the Application assembly.</dd>
+
+            <dt class="col-sm-3">Errors</dt>
+            <dd class="col-sm-9 mb-0">Domain exceptions mapped to status codes by one middleware, answering with JSON or a redirect depending on the request.</dd>
+        </dl>
     </div>
 </div>
-
-@section Scripts {
-}

@@ -1,4 +1,4 @@
-using CleanArchitecture.Application.Collections;
+﻿using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Enums;
 using CleanArchitecture.Domain.Enums;
@@ -98,7 +98,7 @@ public class ProductsController : Controller
             }
         }
         
-        await PopulateCustomersDropDown();
+        await PopulateCustomersDropDown(createProductDto.CustomerId);
         return View(createProductDto);
     }
 
@@ -120,10 +120,11 @@ public class ProductsController : Controller
                 Price = product.Price,
                 StockQuantity = product.StockQuantity,
                 Category = product.Category,
+                Status = product.Status,
                 CustomerId = product.CustomerId
             };
 
-            await PopulateCustomersDropDown();
+            await PopulateCustomersDropDown(editDto.CustomerId);
             return View(editDto);
         }
         catch (Exception ex)
@@ -162,7 +163,7 @@ public class ProductsController : Controller
             }
         }
         
-        await PopulateCustomersDropDown();
+        await PopulateCustomersDropDown(updateProductDto.CustomerId);
         return View(updateProductDto);
     }
 
@@ -227,7 +228,9 @@ public class ProductsController : Controller
                 .Select(s => new { Value = s.ToString(), Text = s.ToString() });
             viewModel.AvailableStatuses = new SelectList(statuses, "Value", "Text", filter.Status?.ToString());
 
-            var customers = await _customerService.GetActiveCustomersAsync();
+            // Deactivating a customer does not reassign their products, so the filter
+            // must list every customer, not just the active ones.
+            var customers = await _customerService.GetAllAsync();
             viewModel.AvailableCustomers = new SelectList(customers, "Id", "Name", filter.CustomerId);
         }
         catch (Exception ex)
@@ -238,12 +241,23 @@ public class ProductsController : Controller
         return viewModel;
     }
 
-    private async Task PopulateCustomersDropDown()
+    private async Task PopulateCustomersDropDown(int? selectedCustomerId = null)
     {
         try
         {
-            var customers = await _customerService.GetActiveCustomersAsync();
-            ViewBag.Customers = new SelectList(customers, "Id", "Name");
+            var customers = (await _customerService.GetActiveCustomersAsync()).ToList();
+
+            if (selectedCustomerId is int id && customers.All(c => c.Id != id))
+            {
+                var owner = await _customerService.GetByIdAsync(id);
+                if (owner != null)
+                {
+                    owner.Name = $"{owner.Name} (inactive)";
+                    customers.Add(owner);
+                }
+            }
+
+            ViewBag.Customers = new SelectList(customers.OrderBy(c => c.Name), "Id", "Name", selectedCustomerId);
         }
         catch (Exception ex)
         {

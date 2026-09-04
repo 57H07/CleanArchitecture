@@ -1,85 +1,78 @@
-@model CleanArchitecture.Application.DTOs.CreateProductDto
+﻿@model CleanArchitecture.Application.DTOs.CreateProductDto
 
 @{
-    ViewData["Title"] = "Edit Product";
+    ViewData["Title"] = "Edit product";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h2 class="mb-0">@ViewData["Title"]</h2>
-            </div>
-            <div class="card-body">
-                <form asp-action="Edit">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-                    
-                    <div class="form-group mb-3">
-                        <label asp-for="Name" class="form-label"></label>
-                        <input asp-for="Name" class="form-control" placeholder="Enter product name" />
-                        <span asp-validation-for="Name" class="text-danger"></span>
-                    </div>
+<div class="page-head">
+    <h1>@ViewData["Title"]</h1>
+</div>
 
-                    <div class="form-group mb-3">
-                        <label asp-for="Description" class="form-label"></label>
-                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter product description (optional)"></textarea>
-                        <span asp-validation-for="Description" class="text-danger"></span>
-                    </div>
+<div class="row">
+    <div class="col-lg-8">
+        <div class="panel panel-pad">
+            <form asp-action="Edit">
+                <div asp-validation-summary="ModelOnly" class="validation-summary mb-3"></div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label asp-for="Price" class="form-label"></label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input asp-for="Price" class="form-control" placeholder="0.00" step="0.01" />
-                                </div>
-                                <span asp-validation-for="Price" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label asp-for="StockQuantity" class="form-label"></label>
-                                <input asp-for="StockQuantity" class="form-control" placeholder="Enter stock quantity" />
-                                <span asp-validation-for="StockQuantity" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
+                <input asp-for="Status" type="hidden" />
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group mb-3">
-                                <label asp-for="Category" class="form-label"></label>
-                                <input asp-for="Category" class="form-control" placeholder="Enter category (optional)" />
-                                <span asp-validation-for="Category" class="text-danger"></span>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group mb-4">
-                                <label asp-for="CustomerId" class="form-label"></label>
-                                <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
-                                    <option value="">Select a customer</option>
-                                </select>
-                                <span asp-validation-for="CustomerId" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Alder Task Chair" />
+                    <span asp-validation-for="Name" class="field-error"></span>
+                </div>
 
-                    <div class="d-flex justify-content-between">
-                        <a asp-action="Index" class="btn btn-outline-secondary">
-                            <i class="bi bi-arrow-left"></i> Back to List
-                        </a>
-                        <button type="submit" class="btn btn-warning">
-                            <i class="bi bi-save"></i> Update Product
-                        </button>
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional"></textarea>
+                    <span asp-validation-for="Description" class="field-error"></span>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Price" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Price" class="form-control num" placeholder="0.00" step="0.01" />
+                        </div>
+                        <span asp-validation-for="Price" class="field-error"></span>
                     </div>
-                </form>
-            </div>
+                    <div class="col-sm-6">
+                        <label asp-for="StockQuantity" class="form-label"></label>
+                        <input asp-for="StockQuantity" class="form-control num" placeholder="0" />
+                        <span asp-validation-for="StockQuantity" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6">
+                        <label asp-for="Category" class="form-label"></label>
+                        <input asp-for="Category" class="form-control" placeholder="Optional" />
+                        <span asp-validation-for="Category" class="field-error"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="CustomerId" class="form-label"></label>
+                        <select asp-for="CustomerId" class="form-select" asp-items="ViewBag.Customers">
+                            <option value="">Select a customer</option>
+                        </select>
+                        <span asp-validation-for="CustomerId" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a asp-action="Index" class="btn btn-link px-0">
+                        <i class="bi bi-chevron-left"></i> Back to products
+                    </a>
+                    <div class="d-flex gap-2">
+                        <a asp-action="Index" class="btn btn-quiet">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
 }

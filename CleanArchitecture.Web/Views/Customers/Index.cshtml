@@ -4,64 +4,52 @@
     ViewData["Title"] = "Customers";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>@ViewData["Title"]</h1>
-    <button type="button" class="btn btn-primary" id="customerCreateBtn">
-        <i class="bi bi-plus-circle"></i> New Customer
-    </button>
+<div class="page-head">
+    <h1>Customers</h1>
+    <div class="d-flex align-items-center gap-3">
+        <span class="page-count">@Model.TotalItems @(Model.TotalItems == 1 ? "customer" : "customers")</span>
+        <button type="button" class="btn btn-primary" id="customerCreateBtn">
+            <i class="bi bi-plus-lg"></i> New customer
+        </button>
+    </div>
 </div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <form id="customerFilterForm" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label" for="searchTerm">Search</label>
-                <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.Filter.SearchTerm" placeholder="Name, email or company" />
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="isActive">Status</label>
-                <select class="form-select" id="isActive" name="isActive">
-                    <option value="">All statuses</option>
-                    <option value="true" selected="@(Model.Filter.IsActive == true)">Active</option>
-                    <option value="false" selected="@(Model.Filter.IsActive == false)">Inactive</option>
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" for="pageSize">Page size</label>
-                <select class="form-select" id="pageSize" name="pageSize">
-                    @foreach (var size in new[] { 5, 10, 25, 50 })
-                    {
-                        <option value="@size" selected="@(Model.PageSize == size)">@size</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2 d-grid">
-                <button type="submit" class="btn btn-outline-primary">
-                    <i class="bi bi-funnel"></i> Filter
-                </button>
-            </div>
-
-            <input type="hidden" name="sortBy" value="@Model.Filter.SortBy" />
-            <input type="hidden" name="sortOrder" value="@Model.Filter.SortOrder" />
-
-            @if (Model.Filter.HasActiveFilters)
+<form id="customerFilterForm" class="toolbar row g-2 align-items-end">
+    <div class="col-12 col-md-5 col-lg-4">
+        <label class="form-label" for="searchTerm">Search</label>
+        <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.Filter.SearchTerm" placeholder="Name, email or company" />
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <label class="form-label" for="isActive">Status</label>
+        <select class="form-select" id="isActive" name="isActive">
+            <option value="">All statuses</option>
+            <option value="true" selected="@(Model.Filter.IsActive == true)">Active</option>
+            <option value="false" selected="@(Model.Filter.IsActive == false)">Inactive</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2 col-lg-1">
+        <label class="form-label" for="pageSize">Rows</label>
+        <select class="form-select" id="pageSize" name="pageSize">
+            @foreach (var size in new[] { 5, 10, 25, 50 })
             {
-                <div class="col-12">
-                    <a href="/Customers" class="btn btn-sm btn-link px-0">
-                        <i class="bi bi-x-circle"></i> Clear filters
-                    </a>
-                </div>
+                <option value="@size" selected="@(Model.PageSize == size)">@size</option>
             }
-        </form>
+        </select>
     </div>
-</div>
+    <div class="col-12 col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-quiet flex-grow-1">Apply</button>
+        @if (Model.Filter.HasActiveFilters)
+        {
+            <a href="/Customers" class="btn btn-link toolbar-clear px-2" id="customerClearFiltersBtn">Clear</a>
+        }
+    </div>
 
-<div class="card">
-    <div class="card-body">
-        <div id="customerTableWrapper">
-            @await Html.PartialAsync("_CustomerTable", Model)
-        </div>
-    </div>
+    <input type="hidden" name="sortBy" value="@Model.Filter.SortBy" />
+    <input type="hidden" name="sortOrder" value="@Model.Filter.SortOrder" />
+</form>
+
+<div class="panel table-wrapper" id="customerTableWrapper">
+    @await Html.PartialAsync("_CustomerTable", Model)
 </div>
 
 @await Html.PartialAsync("_CustomerModal")

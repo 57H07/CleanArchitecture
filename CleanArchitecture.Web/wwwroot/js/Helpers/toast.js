@@ -1,6 +1,5 @@
-// Generic Bootstrap toast helper. Creates/reuses a single bottom-right
-// toast-container and knows how to render each of Bootstrap's semantic
-// variants, so callers just say what happened, not how to build the markup.
+// Creates/reuses a single bottom-right toast-container.
+// Views/Shared/_Toast.cshtml builds the same markup server-side; keep the two in step.
 
 const VARIANTS = {
     success: { color: "success", icon: "bi-check-circle-fill", header: "Success" },
@@ -35,17 +34,20 @@ function show(message, type = "info", options = {}) {
     const variant = VARIANTS[type] || VARIANTS.info;
 
     const toastEl = document.createElement("div");
-    toastEl.className = `toast border-${variant.color}`;
+    toastEl.className = `toast toast--${variant.color}`;
     toastEl.setAttribute("role", "alert");
     toastEl.setAttribute("aria-live", "assertive");
     toastEl.setAttribute("aria-atomic", "true");
     toastEl.innerHTML = `
-        <div class="toast-header text-bg-${variant.color}">
+        <div class="toast-header">
             <i class="bi ${variant.icon} me-2"></i>
-            <strong class="me-auto">${header || variant.header}</strong>
+            <strong class="me-auto"></strong>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-        <div class="toast-body">${message}</div>`;
+        <div class="toast-body"></div>`;
+    // Set as text, not interpolated above: server messages can quote user input.
+    toastEl.querySelector(".toast-header strong").textContent = header || variant.header;
+    toastEl.querySelector(".toast-body").textContent = message;
 
     getContainer().appendChild(toastEl);
     const toast = new bootstrap.Toast(toastEl, { autohide, delay });

@@ -1,0 +1,96 @@
+.btn {
+  font-size: .875rem;
+  border-radius: .3125rem;
+
+  i.bi {
+    font-size: .875rem;
+    vertical-align: -.075em;
+  }
+}
+
+.btn-sm { font-size: .8125rem; }
+
+.btn-primary {
+  --bs-btn-bg: var(--app-accent);
+  --bs-btn-border-color: var(--app-accent);
+  --bs-btn-color: var(--app-on-accent);
+  --bs-btn-hover-bg: var(--app-accent-hover);
+  --bs-btn-hover-border-color: var(--app-accent-hover);
+  --bs-btn-hover-color: var(--app-on-accent);
+  --bs-btn-active-bg: var(--app-accent-hover);
+  --bs-btn-active-border-color: var(--app-accent-hover);
+  --bs-btn-active-color: var(--app-on-accent);
+  --bs-btn-disabled-bg: var(--app-accent);
+  --bs-btn-disabled-border-color: var(--app-accent);
+  --bs-btn-disabled-color: var(--app-on-accent);
+}
+
+.btn-quiet {
+  --bs-btn-bg: var(--app-panel);
+  --bs-btn-border-color: var(--app-hairline);
+  --bs-btn-color: var(--app-ink);
+  --bs-btn-hover-bg: var(--app-row-hover);
+  --bs-btn-hover-border-color: var(--app-hairline);
+  --bs-btn-hover-color: var(--app-ink);
+  --bs-btn-active-bg: var(--app-row-hover);
+  --bs-btn-active-border-color: var(--app-hairline);
+  --bs-btn-active-color: var(--app-ink);
+  --bs-btn-disabled-bg: var(--app-panel);
+  --bs-btn-disabled-border-color: var(--app-hairline);
+  --bs-btn-disabled-color: var(--app-muted);
+}
+
+.btn-danger {
+  --bs-btn-bg: var(--app-danger);
+  --bs-btn-border-color: var(--app-danger);
+  --bs-btn-color: var(--app-on-danger);
+  --bs-btn-hover-bg: var(--app-danger);
+  --bs-btn-hover-border-color: var(--app-danger);
+  --bs-btn-hover-color: var(--app-on-danger);
+  --bs-btn-active-bg: var(--app-danger);
+  --bs-btn-active-border-color: var(--app-danger);
+  --bs-btn-active-color: var(--app-on-danger);
+  --bs-btn-disabled-bg: var(--app-danger);
+  --bs-btn-disabled-border-color: var(--app-danger);
+  --bs-btn-disabled-color: var(--app-on-danger);
+}
+
+.btn-link {
+  --bs-btn-color: var(--app-muted);
+  --bs-btn-hover-color: var(--app-ink);
+  font-size: .8125rem;
+}
+
+.row-actions {
+  display: flex;
+  gap: .125rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 1.875rem;
+  height: 1.875rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--app-muted);
+  border-radius: .3125rem;
+  line-height: 1;
+
+  .bi { font-size: .9375rem; }
+
+  &:hover {
+    color: var(--app-ink);
+    background: var(--app-row-hover);
+    text-decoration: none;
+  }
+
+  &.is-danger:hover {
+    color: var(--app-danger);
+    background: var(--app-danger-tint);
+  }
+}

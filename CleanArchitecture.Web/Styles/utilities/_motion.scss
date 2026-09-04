@@ -1,0 +1,34 @@
+:root {
+  --app-dur: 120ms;
+  --app-ease: cubic-bezier(.2, 0, .2, 1);
+}
+
+.table-hover > tbody > tr { transition: background-color 90ms var(--app-ease); }
+
+.btn-icon,
+.app-nav .nav-link,
+.theme-toggle,
+.panel-link {
+  transition: background-color 90ms var(--app-ease), color 90ms var(--app-ease), border-color 90ms var(--app-ease);
+}
+
+// Signals that the AJAX list refresh is in flight.
+.table-wrapper { transition: opacity var(--app-dur) var(--app-ease); }
+
+.table-wrapper.is-loading {
+  opacity: .55;
+  pointer-events: none;
+}
+
+.modal.fade .modal-dialog { transition: transform .16s var(--app-ease), opacity .16s var(--app-ease); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

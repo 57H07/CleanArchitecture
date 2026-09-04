@@ -1,0 +1,51 @@
+.toast {
+  background: var(--app-panel);
+  border: 1px solid var(--app-hairline);
+  border-radius: .5rem;
+  box-shadow: var(--app-overlay-shadow);
+  font-size: .875rem;
+}
+
+.toast-header {
+  background: transparent;
+  border-bottom: 0;
+  padding: .625rem .75rem .125rem;
+  font-weight: 600;
+  color: var(--app-ink);
+}
+
+.toast-body {
+  padding: 0 .75rem .625rem 2.0625rem;
+  color: var(--app-muted);
+}
+
+@mixin toast-severity($color) {
+  border-left: 3px solid $color;
+
+  .toast-header .bi { color: $color; }
+}
+
+.toast--success { @include toast-severity(var(--app-positive)); }
+.toast--danger  { @include toast-severity(var(--app-danger)); }
+.toast--warning { @include toast-severity(var(--app-caution)); }
+.toast--info    { @include toast-severity(var(--app-accent)); }
+
+.alert-inline {
+  display: flex;
+  gap: .625rem;
+  align-items: flex-start;
+  font-size: .875rem;
+  padding: .75rem .875rem;
+  border-radius: .375rem;
+  color: var(--app-danger);
+  background: var(--app-danger-tint);
+
+  .bi { margin-top: .125rem; }
+
+  > div > div + div { margin-top: .25rem; }
+}
+
+.alert-inline--caution {
+  color: var(--app-caution);
+  background: var(--app-caution-tint);
+}

@@ -1,5 +1,6 @@
 import Ajax from "./Helpers/ajax.js";
 import Toast from "./Helpers/toast.js";
+import Tooltip from "./Helpers/tooltip.js";
 
 const INDEX_URL = "/Customers";
 
@@ -18,6 +19,9 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
     const deleteSpinner = document.getElementById("customerDeleteSpinner");
     let pendingDeleteId = null;
 
+    const sortByInput = filterForm.querySelector('input[name="sortBy"]');
+    const sortOrderInput = filterForm.querySelector('input[name="sortOrder"]');
+
     function currentFilterRoute() {
         const route = {};
         new FormData(filterForm).forEach((value, key) => {
@@ -26,25 +30,55 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         return route;
     }
 
+    // Sorting goes through the table's data-route links, which never touch the filter
+    // form; without this its hidden fields would keep replaying the original sort.
+    function syncSortInputs(route) {
+        if (sortByInput && route.sortBy !== undefined) sortByInput.value = route.sortBy;
+        if (sortOrderInput && route.sortOrder !== undefined) sortOrderInput.value = route.sortOrder;
+    }
+
     async function loadCustomers(route) {
         const query = new URLSearchParams(route).toString();
         const url = query ? `${INDEX_URL}?${query}` : INDEX_URL;
 
-        const { body } = await Ajax.get(url);
-        tableContainer.innerHTML = body;
-        window.history.replaceState(null, "", url);
+        // Fade the list while it is being replaced
+        tableContainer.classList.add("is-loading");
+        try {
+            const { body } = await Ajax.get(url);
+            Tooltip.disposeTooltips(tableContainer);
+            tableContainer.innerHTML = body;
+            Tooltip.initTooltips(tableContainer);
+            syncSortInputs(route);
+            window.history.replaceState(null, "", url);
+        } finally {
+            tableContainer.classList.remove("is-loading");
+        }
     }
 
     function refreshWithCurrentFilters(extra) {
         return loadCustomers({ ...currentFilterRoute(), ...extra });
     }
 
+    function loadCustomersOrReport(route) {
+        return loadCustomers(route).catch((error) => Toast.error(error.message));
+    }
+
     filterForm.addEventListener("submit", (event) => {
         event.preventDefault();
-        loadCustomers({ ...currentFilterRoute(), page: "1" });
+        loadCustomersOrReport({ ...currentFilterRoute(), page: "1" });
     });
 
     filterForm.querySelector("#pageSize")?.addEventListener("change", () => filterForm.requestSubmit());
+
+    function clearFilters() {
+        filterForm.reset();
+        loadCustomersOrReport({});
+    }
+
+    filterForm.querySelector("#customerClearFiltersBtn")?.addEventListener("click", (event) => {
+        event.preventDefault();
+        clearFilters();
+    });
 
     // Delegated handlers: the table container's content is replaced on every reload.
     tableContainer.addEventListener("click", (event) => {
@@ -53,18 +87,22 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         const editBtn = event.target.closest(".customer-edit-btn");
         const deleteBtn = event.target.closest(".customer-delete-btn");
         const emptyCreateBtn = event.target.closest("#customerEmptyCreateBtn");
+        const emptyClearBtn = event.target.closest("#customerEmptyClearBtn");
 
         if (sortLink || pageLink) {
             event.preventDefault();
             const link = sortLink || pageLink;
             if (link.closest(".disabled")) return;
-            loadCustomers(JSON.parse(link.dataset.route));
+            loadCustomersOrReport(JSON.parse(link.dataset.route));
         } else if (editBtn) {
             openEditModal(editBtn.dataset.id);
         } else if (deleteBtn) {
             openDeleteModal(deleteBtn.dataset.id, deleteBtn.dataset.name);
         } else if (emptyCreateBtn) {
             openCreateModal();
+        } else if (emptyClearBtn) {
+            event.preventDefault();
+            clearFilters();
         }
     });
 
@@ -78,7 +116,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
 
     function openCreateModal() {
         resetForm();
-        document.getElementById("customerModalLabel").textContent = "New Customer";
+        document.getElementById("customerModalLabel").textContent = "New customer";
         customerModal.show();
     }
 
@@ -86,7 +124,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         resetForm();
         try {
             const { body: customer } = await Ajax.get(`${INDEX_URL}/GetDetails/${id}`);
-            document.getElementById("customerModalLabel").textContent = "Edit Customer";
+            document.getElementById("customerModalLabel").textContent = "Edit customer";
             document.getElementById("customerId").value = customer.id;
             document.getElementById("customerName").value = customer.name ?? "";
             document.getElementById("customerEmail").value = customer.email ?? "";
@@ -107,11 +145,12 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         const url = id ? `${INDEX_URL}/Edit/${id}` : `${INDEX_URL}/Create`;
 
         setBusy(submitBtn, submitSpinner, true);
+        let saved = false;
         try {
             const { body } = await Ajax.submitForm(customerForm, { url, method: "POST" });
             customerModal.hide();
             Toast.success(body.message);
-            await refreshWithCurrentFilters();
+            saved = true;
         } catch (error) {
             if (error.errors) {
                 Ajax.applyValidationErrors(customerForm, error.errors);
@@ -121,6 +160,9 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         } finally {
             setBusy(submitBtn, submitSpinner, false);
         }
+
+        // Outside the try: a failing refresh must not be reported as a failed save.
+        if (saved) await refreshWithCurrentFilters().catch((error) => Toast.error(error.message));
     });
 
     function openDeleteModal(id, name) {
@@ -133,11 +175,12 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         if (!pendingDeleteId) return;
 
         setBusy(deleteConfirmBtn, deleteSpinner, true);
+        let deleted = false;
         try {
             const { body } = await Ajax.post(`${INDEX_URL}/Delete/${pendingDeleteId}`);
             deleteModal.hide();
             Toast.success(body.message);
-            await refreshWithCurrentFilters();
+            deleted = true;
         } catch (error) {
             deleteModal.hide();
             Toast.error(error.message);
@@ -145,6 +188,8 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
             setBusy(deleteConfirmBtn, deleteSpinner, false);
             pendingDeleteId = null;
         }
+
+        if (deleted) await refreshWithCurrentFilters().catch((error) => Toast.error(error.message));
     });
 
     function setBusy(button, spinner, busy) {

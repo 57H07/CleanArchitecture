@@ -1,0 +1,134 @@
+.form-label {
+  font-size: .8125rem;
+  font-weight: 500;
+  color: var(--app-muted);
+  margin-bottom: .3125rem;
+}
+
+.form-control,
+.form-select {
+  font-size: .875rem;
+  background-color: var(--app-panel);
+  border-color: var(--app-hairline);
+  color: var(--app-ink);
+  border-radius: .3125rem;
+}
+
+.form-control::placeholder {
+  color: var(--app-muted);
+  opacity: .7;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--app-panel);
+  border-color: var(--app-accent);
+  box-shadow: none;
+}
+
+.input-group-text {
+  font-size: .875rem;
+  background: var(--app-row-hover);
+  border-color: var(--app-hairline);
+  color: var(--app-muted);
+}
+
+.form-check-input {
+  &:checked {
+    background-color: var(--app-accent);
+    border-color: var(--app-accent);
+  }
+
+  &:focus {
+    box-shadow: none;
+    border-color: var(--app-accent);
+  }
+}
+
+.form-switch .form-check-label { font-size: .875rem; }
+
+.form-hint {
+  font-size: .8125rem;
+  color: var(--app-muted);
+  margin-top: .25rem;
+}
+
+// Bootstrap's inline warning glyph collides with right-aligned numerics.
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--app-danger);
+  background-image: none;
+  padding-right: .75rem;
+}
+
+.invalid-feedback,
+.field-error,
+[data-valmsg-for] {
+  display: block;
+  font-size: .8125rem;
+  color: var(--app-danger);
+  margin-top: .25rem;
+}
+
+// The asp-validation-* tag helpers leave these in the markup permanently.
+[data-valmsg-for]:empty,
+.field-validation-valid,
+.validation-summary-valid { display: none; }
+
+.validation-summary {
+  font-size: .875rem;
+  padding: .75rem .875rem;
+  border-radius: .375rem;
+  color: var(--app-danger);
+  background: var(--app-danger-tint);
+
+  &[hidden] { display: none; }
+
+  > div + div { margin-top: .25rem; }
+}
+
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+
+.toolbar {
+  margin-bottom: 1.125rem;
+
+  .form-label { margin-bottom: .25rem; }
+}
+
+.toolbar-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: .3125rem;
+  font-size: .8125rem;
+  color: var(--app-muted);
+}
+
+:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.page-link:focus-visible,
+.btn-icon:focus-visible,
+.th-sort:focus-visible,
+.theme-toggle:focus-visible {
+  box-shadow: none;
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+.form-control:focus-visible,
+.form-select:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}

@@ -1,63 +1,67 @@
 ﻿<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/css/bootstrap-custom.min.css" />
+    <title>@ViewData["Title"] · Clean Architecture Demo</title>
+
+    <script src="~/js/theme-init.js" asp-append-version="true"></script>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CleanArchitecture.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Clean Architecture Demo</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1 align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Customers" asp-action="Index">Customers</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+    <header class="app-nav">
+        <nav class="container navbar navbar-expand-md p-0" aria-label="Main">
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                <span class="brand-mark" aria-hidden="true">CA</span> Clean Architecture Demo
+            </a>
 
-                        <li class="nav-item ms-auto">
-                            <button id="themeToggleBtn" class="btn btn-link nav-link" type="button" title="Basculer le thème">
-                                <i id="themeIcon" class="bi bi-moon"></i>
-                            </button>
-                        </li>
-                    </ul>
+            <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+                    aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav gap-1 py-2 py-md-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="@ViewContext.AriaCurrent("Home", "Index")" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="@ViewContext.AriaCurrent("Products")" asp-controller="Products" asp-action="Index">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="@ViewContext.AriaCurrent("Customers")" asp-controller="Customers" asp-action="Index">Customers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="@ViewContext.AriaCurrent("Home", "Privacy")" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                    </li>
+                </ul>
+
+                <div class="ms-md-auto py-2 py-md-0">
+                    <button id="themeToggleBtn" class="theme-toggle" type="button" title="Change theme">
+                        <i id="themeIcon" class="bi bi-circle-half" aria-hidden="true"></i>
+                        <span id="themeLabel">Auto</span>
+                    </button>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
 
-        <partial name="_Toast" />
+    <partial name="_Toast" />
 
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    <main role="main" class="container py-4">
+        @RenderBody()
+    </main>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Clean Architecture Demo - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="app-footer">
+        <div class="container d-flex justify-content-between flex-wrap gap-2">
+            <span>&copy; 2026 Clean Architecture Demo</span>
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script type="module" src="~/js/site.js" asp-append-version="true"></script>

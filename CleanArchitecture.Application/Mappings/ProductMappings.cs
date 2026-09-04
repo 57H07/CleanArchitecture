@@ -1,4 +1,4 @@
-using CleanArchitecture.Application.DTOs;
+﻿using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
 
@@ -12,7 +12,9 @@ public class ProductMappings : IRegister
             .Map(dest => dest.IsInStock, src => src.IsInStock())
             .Map(dest => dest.CustomerName, src => src.Customer != null ? src.Customer.Name : string.Empty);
 
+        // Also the update mapping (ProductService.UpdateAsync adapts onto the tracked
+        // entity), so null must overwrite or cleared fields would keep their old value.
         TypeAdapterConfig<CreateProductDto, Product>.NewConfig()
-            .IgnoreNullValues(true);
+            .IgnoreNullValues(false);
     }
 }

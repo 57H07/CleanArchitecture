@@ -1,4 +1,4 @@
-using CleanArchitecture.Domain.Entities;
+﻿using CleanArchitecture.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,7 +36,10 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.UpdatedBy)
             .HasMaxLength(100);
 
-        builder.HasIndex(e => e.Email);
+        // CustomerService.ExistsByEmailAsync is a check-then-act that loses a race
+        // between concurrent creates; only the database can enforce this.
+        builder.HasIndex(e => e.Email)
+            .IsUnique();
 
         // Seed data
         builder.HasData(

@@ -1,0 +1,32 @@
+.pagination {
+  --bs-pagination-padding-x: .5rem;
+  --bs-pagination-padding-y: .1875rem;
+  --bs-pagination-font-size: .8125rem;
+  --bs-pagination-color: var(--app-muted);
+  --bs-pagination-bg: transparent;
+  --bs-pagination-border-color: transparent;
+  --bs-pagination-hover-color: var(--app-ink);
+  --bs-pagination-hover-bg: var(--app-row-hover);
+  --bs-pagination-hover-border-color: transparent;
+  --bs-pagination-focus-color: var(--app-ink);
+  --bs-pagination-focus-bg: var(--app-row-hover);
+  --bs-pagination-focus-box-shadow: none;
+  --bs-pagination-active-color: var(--app-accent);
+  --bs-pagination-active-bg: var(--app-accent-tint);
+  --bs-pagination-active-border-color: transparent;
+  --bs-pagination-disabled-color: var(--app-hairline);
+  --bs-pagination-disabled-bg: transparent;
+  --bs-pagination-disabled-border-color: transparent;
+  --bs-pagination-border-radius: .3125rem;
+
+  font-variant-numeric: tabular-nums;
+  gap: .125rem;
+
+  .page-link:hover { text-decoration: none; }
+}
+
+.result-count {
+  font-size: .8125rem;
+  color: var(--app-muted);
+  font-variant-numeric: tabular-nums;
+}

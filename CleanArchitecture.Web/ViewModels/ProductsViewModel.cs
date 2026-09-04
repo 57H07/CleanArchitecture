@@ -1,4 +1,4 @@
-using CleanArchitecture.Application.Collections;
+﻿using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -33,7 +33,8 @@ public class ProductsViewModel
         ? "No products match the current filters"
         : "No products available";
 
-    // Helper methods for view: build query strings that preserve current filter/sort/page state
+    public bool IsSortedBy(ProductSortBy sortField) => Filter.SortBy == sortField;
+
     public string GetSortIcon(ProductSortBy sortField)
     {
         if (Filter.SortBy != sortField) return "bi-arrow-down-up text-muted";

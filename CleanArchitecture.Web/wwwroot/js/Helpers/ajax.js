@@ -83,7 +83,7 @@ function clearValidationErrors(form) {
     });
     const summary = form.querySelector("[data-valmsg-summary]");
     if (summary) {
-        summary.innerHTML = "";
+        summary.replaceChildren();
         summary.hidden = true;
     }
 }
@@ -120,7 +120,12 @@ function applyValidationErrors(form, errors) {
     if (summaryMessages.length) {
         const summary = form.querySelector("[data-valmsg-summary]");
         if (summary) {
-            summary.innerHTML = summaryMessages.map((m) => `<div>${m}</div>`).join("");
+            // textContent, not innerHTML: ModelState messages quote the submitted value.
+            summary.replaceChildren(...summaryMessages.map((m) => {
+                const line = document.createElement("div");
+                line.textContent = m;
+                return line;
+            }));
             summary.hidden = false;
         }
     }

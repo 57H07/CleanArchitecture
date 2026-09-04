@@ -31,11 +31,13 @@ Every repository/service method takes a trailing `CancellationToken cancellation
 
 ### Pagination: no IQueryable above Infrastructure
 
-`IPaginatedList<T>` (Application interface, extends `IReadOnlyList<T>`) is the contract. `Infrastructure/Collections/PaginatedList<T>.CreateAsync(IQueryable, page, size, ct)` materializes the page with EF. Services convert to DTOs with `pagedEntities.ToPagedResult(e => e.Adapt<Dto>())`, which yields the Application-side `PagedResult<TDto>`. Web renders it through `PaginationViewComponent` / `PaginationViewModel`. Page index is 1-based; both classes throw on page or size below 1.
+`IPaginatedList<T>` (Application interface, extends `IReadOnlyList<T>`) is the contract. `Infrastructure/Collections/PaginatedList<T>.CreateAsync(IQueryable, page, size, ct)` materializes the page with EF. Services convert to DTOs with `pagedEntities.ToPagedResult(e => e.Adapt<Dto>())`, which yields the Application-side `PagedResult<TDto>`. 
 
 ### Mapping: Mapster with scanned `IRegister`
 
 `MappingConfig.Configure()` scans the Application assembly for `IRegister` implementations (`ProductMappings`, `CustomerMappings`) and compiles the global config. Add new mappings as an `IRegister` class in `Application/Mappings`; do not configure mappings elsewhere. Services use the static `.Adapt<T>()` extension.
+
+The `CreateXxxDto -> Xxx` registration is also the *update* mapping: services adapt the DTO onto the tracked entity (`dto.Adapt(entity)`). So it must keep `IgnoreNullValues(false)` — MVC binds an empty text input to `null`, and ignoring nulls would silently keep the old value whenever a user clears an optional field.
 
 ### Exceptions and HTTP mapping
 
@@ -50,7 +52,20 @@ Two things to know before changing error handling:
 - Controllers are thin, wrap service calls in try/catch, and signal outcome via TempData. Two coexisting styles: plain `TempData["Success"]` / `TempData["Error"]` strings, and serialized `ToastMessage` under `ToastMessage.SuccessKey` / `ErrorKey`. `Views/Shared/_Toast.cshtml` reads both.
 - `AutoValidateAntiforgeryTokenAttribute` is a global filter, so every POST form needs the antiforgery token.
 - Create/Update forms bind directly to Application DTOs (`CreateProductDto`, `CreateCustomerDto`) validated with Data Annotations; `ViewModels/` hold list/paging shapes only.
-- `PaginationViewComponent` and the shared view models live in namespaces `CleanArchitecture.ViewComponents` / `CleanArchitecture.ViewModels.Shared` (no `.Web`), unlike the rest of the Web project.
+
+### Styling
+
+Custom CSS is authored as SCSS under `CleanArchitecture.Web/Styles/` and compiled to `wwwroot/css/app.css` by the `AspNetCore.SassCompiler` package on every `dotnet build` (config in `sasscompiler.json`; `dotnet watch` recompiles on save). Only `app.scss` compiles — it `@use`s the `_`-prefixed partials, split by concern: `base/` (tokens, typography, layout shell) then `components/` (navbar, buttons, forms, tables, badges, pagination, modals, toasts) then `utilities/_motion.scss` last.
+
+Bootstrap 5.3 is never forked. The stock `lib/bootstrap/dist/css/bootstrap.min.css` is loaded as-is and retuned through its own CSS custom properties: `base/_theme.scss` defines the `--app-*` palette, remaps `--bs-*` onto it, and redeclares every token under `[data-bs-theme="dark"]`. Anything new should reach for an existing `--app-*` token or a Bootstrap `--bs-*` variable rather than a literal colour, or it will not follow the theme.
+
+Conventions worth knowing:
+- Status is a dot pill (`.status-positive|caution|danger|neutral`), classification is an outline chip (`.tag`). Do not use `badge bg-*`.
+- Boxed surfaces are `.panel` (flat, hairline border); only overlays get a shadow.
+- Buttons are `.btn-primary`, `.btn-quiet` or `.btn-danger`; row actions are `.btn-icon` inside `.row-actions`, icon-only with `title` + `aria-label`.
+- Toast markup exists twice — `Views/Shared/_Toast.cshtml` and `wwwroot/js/Helpers/toast.js` — and both emit `toast--<variant>`; change them together.
+- Theme is `auto` (OS) / `light` / `dark`, persisted in `localStorage["theme"]`. An inline script in `_Layout.cshtml`'s `<head>` stamps `data-bs-theme` before first paint; `wwwroot/js/theme.js` owns the toggle.
+- Motion is confined to `utilities/_motion.scss` and is disabled under `prefers-reduced-motion`.
 
 ### Database
 
@@ -58,7 +73,7 @@ SQL Server LocalDB via `ConnectionStrings:DefaultConnection`. There are no EF mi
 
 ### Tests
 
-`CleanArchitecture.Application.Tests` covers services only. Pattern: mock `IUnitOfWork` and its repository properties with Moq, build entities/DTOs with `Helpers/TestDataBuilder`, assert with FluentAssertions. `Xunit`, `Moq`, `FluentAssertions`, `AutoFixture` are global usings in the test project.
+`CleanArchitecture.Application.Tests` covers services and the Mapster registrations. `Helpers/MappingSetup` runs `MappingConfig.Configure()` from a `[ModuleInitializer]`, so the suite exercises the real mapping config rather than Mapster's convention fallback. Pattern: mock `IUnitOfWork` and its repository properties with Moq, build entities/DTOs with `Helpers/TestDataBuilder`, assert with FluentAssertions. `Xunit`, `Moq`, `FluentAssertions`, `AutoFixture` are global usings in the test project.
 
 ## Adding a new entity (established order)
 
@@ -68,3 +83,8 @@ SQL Server LocalDB via `ConnectionStrings:DefaultConnection`. There are no EF mi
 4. `IXxxService` + `XxxService` in Application; register in `AddApplication()`.
 5. `XxxConfiguration : IEntityTypeConfiguration<Xxx>` in Infrastructure (including `HasData` seed), repository implementation, `UnitOfWork` property, register in `AddInfrastructure()`.
 6. Controller + Razor views (Bootstrap 5 + Bootstrap Icons) in Web.
+
+# Global style:
+
+- Code-only, no explanation unless asked. Concise output.
+- Do not add comments unless code is hard to understand without them.

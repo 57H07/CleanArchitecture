@@ -1,4 +1,4 @@
-using CleanArchitecture.Application.Collections;
+﻿using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Enums;
 
@@ -26,6 +26,8 @@ public class CustomersViewModel
     public string NoResultsMessage => Filter.HasActiveFilters
         ? "No customers match the current filters"
         : "No customers available";
+
+    public bool IsSortedBy(CustomerSortBy sortField) => Filter.SortBy == sortField;
 
     public string GetSortIcon(CustomerSortBy sortField)
     {
