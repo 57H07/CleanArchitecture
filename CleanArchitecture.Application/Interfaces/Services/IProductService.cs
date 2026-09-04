@@ -8,10 +8,11 @@ public interface IProductService
 {
     Task<ProductDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
     Task<IEnumerable<ProductDto>> GetAllAsync(CancellationToken cancellationToken = default);
-    Task<PagedResult<ProductDto>> GetPagedAsync(int pageIndex, int pageSize, CancellationToken cancellationToken = default);
+    Task<PagedResult<ProductDto>> GetPagedAsync(ProductFilterDto filter, CancellationToken cancellationToken = default);
     Task<IEnumerable<ProductDto>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<IEnumerable<ProductDto>> GetByCategoryAsync(string category, CancellationToken cancellationToken = default);
     Task<IEnumerable<ProductDto>> GetAvailableProductsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetDistinctCategoriesAsync(CancellationToken cancellationToken = default);
     Task<ProductDto> CreateAsync(CreateProductDto createProductDto, CancellationToken cancellationToken = default);
     Task<ProductDto> UpdateAsync(int id, CreateProductDto updateProductDto, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, CancellationToken cancellationToken = default);

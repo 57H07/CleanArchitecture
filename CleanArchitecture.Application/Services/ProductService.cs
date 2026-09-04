@@ -1,8 +1,10 @@
 using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.Enums;
 using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Application.Interfaces.Services;
 using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Domain.Enums;
 using Mapster;
 
 namespace CleanArchitecture.Application.Services;
@@ -28,9 +30,11 @@ public class ProductService : IProductService
         return products.Adapt<IEnumerable<ProductDto>>();
     }
 
-    public async Task<PagedResult<ProductDto>> GetPagedAsync(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<ProductDto>> GetPagedAsync(ProductFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var pagedProducts = await _unitOfWork.Products.GetPagedAsync(pageIndex, pageSize, cancellationToken);
+        ArgumentNullException.ThrowIfNull(filter);
+
+        var pagedProducts = await _unitOfWork.Products.GetPagedAsync(filter, cancellationToken);
 
         return pagedProducts.ToPagedResult(dto => dto.Adapt<ProductDto>());
     }
@@ -123,6 +127,11 @@ public class ProductService : IProductService
     public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _unitOfWork.Products.ExistsAsync(id, cancellationToken);
+    }
+
+    public async Task<IEnumerable<string>> GetDistinctCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _unitOfWork.Products.GetDistinctCategoriesAsync(cancellationToken);
     }
 
     /// <summary>

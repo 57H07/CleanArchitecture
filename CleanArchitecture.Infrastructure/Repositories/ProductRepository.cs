@@ -1,3 +1,5 @@
+using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.Enums;
 using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Domain.Entities;
 using CleanArchitecture.Infrastructure.Data;
@@ -30,13 +32,49 @@ public class ProductRepository : IProductRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<IPaginatedList<Product>> GetPagedAsync(int pageIndex, int pageSize, CancellationToken cancellationToken = default)
+    public async Task<IPaginatedList<Product>> GetPagedAsync(ProductFilterDto filter, CancellationToken cancellationToken = default)
     {
         var query = _context.Products
             .Include(p => p.User)
             .AsQueryable();
 
-        return await PaginatedList<Product>.CreateAsync(query, pageIndex, pageSize, cancellationToken);
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+        {
+            var searchTerm = filter.SearchTerm;
+            query = query.Where(p => p.Name.Contains(searchTerm) ||
+                (p.Description != null && p.Description.Contains(searchTerm)));
+        }
+
+        if (!string.IsNullOrWhiteSpace(filter.Category))
+        {
+            query = query.Where(p => p.Category == filter.Category);
+        }
+
+        if (filter.Status.HasValue)
+        {
+            query = query.Where(p => p.Status == filter.Status.Value);
+        }
+
+        if (filter.UserId.HasValue)
+        {
+            query = query.Where(p => p.UserId == filter.UserId.Value);
+        }
+
+        var ascending = filter.SortOrder == SortOrder.Ascending;
+        query = filter.SortBy switch
+        {
+            ProductSortBy.Price => ascending
+                ? query.OrderBy(p => p.Price)
+                : query.OrderByDescending(p => p.Price),
+            ProductSortBy.CreatedDate => ascending
+                ? query.OrderBy(p => p.CreatedAt)
+                : query.OrderByDescending(p => p.CreatedAt),
+            _ => ascending
+                ? query.OrderBy(p => p.Name)
+                : query.OrderByDescending(p => p.Name)
+        };
+
+        return await PaginatedList<Product>.CreateAsync(query, filter.Page, filter.PageSize, cancellationToken);
     }
 
     public async Task<IEnumerable<Product>> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
@@ -86,5 +124,15 @@ public class ProductRepository : IProductRepository
     public async Task<bool> ExistsAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Products.AnyAsync(p => p.Id == id, cancellationToken);
+    }
+
+    public async Task<IEnumerable<string>> GetDistinctCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Products
+            .Where(p => p.Category != null)
+            .Select(p => p.Category!)
+            .Distinct()
+            .OrderBy(c => c)
+            .ToListAsync(cancellationToken);
     }
 }

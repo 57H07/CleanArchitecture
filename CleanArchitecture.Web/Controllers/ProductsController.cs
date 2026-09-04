@@ -1,7 +1,8 @@
 using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.Enums;
+using CleanArchitecture.Domain.Enums;
 using CleanArchitecture.Web.ViewModels;
-using CleanArchitecture.ViewModels.Shared;
 using CleanArchitecture.Application.Interfaces.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -25,43 +26,24 @@ public class ProductsController : Controller
     }
 
     // GET: Products
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 5)
+    // Supports server-side paging, filtering and sorting via query string, e.g.
+    // /Products?category=Electronics&status=Active&sortBy=Price&sortOrder=Descending
+    public async Task<IActionResult> Index([FromQuery] ProductFilterDto filter)
     {
         try
         {
-            PagedResult<ProductDto> products = await _productService.GetPagedAsync(page, pageSize);
-            var pagination = new PaginationViewModel(products)
-            {
-                PaginationId = 1,
-                ContainerCssClasses = "d-flex justify-content-between align-items-center mt-3",
-                ShowPageInfo = true
-            };
+            PagedResult<ProductDto> products = await _productService.GetPagedAsync(filter);
 
-            var viewModel = new ProductsViewModel
-            {
-                Products = products,
-                Pagination = pagination
-            };
-
-            return View(viewModel);
+            return View(await BuildViewModelAsync(products, filter));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while retrieving products");
             TempData["Error"] = "An error occurred while loading products.";
-            var emptyProducts = PagedResult<ProductDto>.Empty();
-            var pagination = new PaginationViewModel(emptyProducts)
-            {
-                PaginationId = 1,
-                ContainerCssClasses = "d-flex justify-content-between align-items-center mt-3",
-                ShowPageInfo = true
-            };
 
-            return View(new ProductsViewModel
-            {
-                Products = emptyProducts,
-                Pagination = pagination
-            });
+            var empty = PagedResult<ProductDto>.Empty(filter.Page, filter.PageSize);
+
+            return View(await BuildViewModelAsync(empty, filter));
         }
     }
 
@@ -225,6 +207,35 @@ public class ProductsController : Controller
             TempData["Error"] = "An error occurred while deleting the product.";
             return RedirectToAction(nameof(Index));
         }
+    }
+
+    private async Task<ProductsViewModel> BuildViewModelAsync(PagedResult<ProductDto> products, ProductFilterDto filter)
+    {
+        var viewModel = new ProductsViewModel
+        {
+            Products = products,
+            Filter = filter
+        };
+
+        try
+        {
+            var categories = (await _productService.GetDistinctCategoriesAsync())
+                .Select(c => new { Value = c, Text = c });
+            viewModel.AvailableCategories = new SelectList(categories, "Value", "Text", filter.Category);
+
+            var statuses = Enum.GetValues<ProductStatus>()
+                .Select(s => new { Value = s.ToString(), Text = s.ToString() });
+            viewModel.AvailableStatuses = new SelectList(statuses, "Value", "Text", filter.Status?.ToString());
+
+            var users = await _userService.GetActiveUsersAsync();
+            viewModel.AvailableUsers = new SelectList(users, "Id", "FullName", filter.UserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while loading product filters");
+        }
+
+        return viewModel;
     }
 
     private async Task PopulateUsersDropDown()

@@ -1,8 +1,6 @@
 using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Enums;
-using CleanArchitecture.Domain.Enums;
-using CleanArchitecture.ViewModels.Shared;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace CleanArchitecture.Web.ViewModels;
@@ -10,62 +8,67 @@ namespace CleanArchitecture.Web.ViewModels;
 public class ProductsViewModel
 {
     public required PagedResult<ProductDto> Products { get; init; }
-    public required PaginationViewModel Pagination { get; init; }
 
-    // Search and filtering
-    public string SearchTerm { get; set; } = string.Empty;
-    public string SelectedCategory { get; set; } = string.Empty;
-    public ProductStatus? SelectedStatus { get; set; }
-    public int? SelectedUserId { get; set; }
-
-    // Sorting
-    public ProductSortBy SortBy { get; set; } = ProductSortBy.Name;
-    public SortOrder SortOrder { get; set; } = SortOrder.Ascending;
+    public required ProductFilterDto Filter { get; init; }
 
     // UI dropdowns
     public SelectList? AvailableCategories { get; set; }
     public SelectList? AvailableStatuses { get; set; }
     public SelectList? AvailableUsers { get; set; }
-    public SelectList? SortOptions { get; set; }
 
-    // Display properties
-    public string PageTitle { get; set; } = "Products";
-    public string SearchPlaceholder { get; set; } = "Search products...";
-
-    // Action buttons configuration
-    public bool ShowCreateButton { get; set; } = true;
-    public bool ShowExportButton { get; set; } = true;
-    public bool ShowBulkActions { get; set; } = false;
+    // Pagination
+    public int CurrentPage => Products.PageIndex;
+    public int PageSize => Products.PageSize;
+    public int TotalItems => Products.TotalCount;
+    public int TotalPages => Products.TotalPages;
+    public bool HasPreviousPage => Products.HasPreviousPage;
+    public bool HasNextPage => Products.HasNextPage;
+    public bool HasMultiplePages => TotalPages > 1;
+    public int StartItem => TotalItems == 0 ? 0 : (CurrentPage - 1) * PageSize + 1;
+    public int EndItem => Math.Min(CurrentPage * PageSize, TotalItems);
 
     // View state
     public bool HasResults => Products.Any();
-    public string NoResultsMessage => !string.IsNullOrEmpty(SearchTerm)
-        ? $"No products found for '{SearchTerm}'"
+    public string NoResultsMessage => Filter.HasActiveFilters
+        ? "No products match the current filters"
         : "No products available";
 
-    // Summary information
-    public int TotalActiveProducts => Products.Count(p => p.Status == ProductStatus.Active);
-    public int TotalDraftProducts => Products.Count(p => p.Status == ProductStatus.Draft);
-    public decimal TotalInventoryValue => Products.Sum(p => p.Price * p.StockQuantity);
-
-    // Helper methods for view
+    // Helper methods for view: build query strings that preserve current filter/sort/page state
     public string GetSortIcon(ProductSortBy sortField)
     {
-        if (SortBy != sortField) return "bi-arrow-up-down";
-        return SortOrder == SortOrder.Ascending ? "bi-arrow-up" : "bi-arrow-down";
+        if (Filter.SortBy != sortField) return "bi-arrow-down-up text-muted";
+        return Filter.SortOrder == SortOrder.Ascending ? "bi-arrow-up" : "bi-arrow-down";
     }
 
-    public string GetSortUrl(ProductSortBy sortField)
+    public IDictionary<string, string> GetSortRouteValues(ProductSortBy sortField)
     {
-        var newOrder = SortBy == sortField && SortOrder == SortOrder.Ascending
+        var newOrder = Filter.SortBy == sortField && Filter.SortOrder == SortOrder.Ascending
             ? SortOrder.Descending
             : SortOrder.Ascending;
 
-        return $"?sortBy={sortField}&sortOrder={newOrder}&searchTerm={SearchTerm}&selectedCategory={SelectedCategory}";
+        return BuildRouteValues(page: 1, sortBy: sortField, sortOrder: newOrder);
     }
 
-    public string GetPaginationUrl(int page)
+    public IDictionary<string, string> GetPageRouteValues(int page)
     {
-        return $"?page={page}&sortBy={SortBy}&sortOrder={SortOrder}&searchTerm={SearchTerm}&selectedCategory={SelectedCategory}";
+        return BuildRouteValues(page, Filter.SortBy, Filter.SortOrder);
+    }
+
+    private IDictionary<string, string> BuildRouteValues(int page, ProductSortBy sortBy, SortOrder sortOrder)
+    {
+        var values = new Dictionary<string, string>
+        {
+            ["page"] = page.ToString(),
+            ["pageSize"] = PageSize.ToString(),
+            ["sortBy"] = sortBy.ToString(),
+            ["sortOrder"] = sortOrder.ToString()
+        };
+
+        if (!string.IsNullOrWhiteSpace(Filter.SearchTerm)) values["searchTerm"] = Filter.SearchTerm;
+        if (!string.IsNullOrWhiteSpace(Filter.Category)) values["category"] = Filter.Category;
+        if (Filter.Status.HasValue) values["status"] = Filter.Status.Value.ToString();
+        if (Filter.UserId.HasValue) values["userId"] = Filter.UserId.Value.ToString();
+
+        return values;
     }
 }

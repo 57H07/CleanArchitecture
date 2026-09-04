@@ -1,3 +1,4 @@
+@using CleanArchitecture.Application.Enums
 @model CleanArchitecture.Web.ViewModels.ProductsViewModel
 
 @{
@@ -11,21 +12,90 @@
     </a>
 </div>
 
+<div class="card mb-3">
+    <div class="card-body">
+        <form asp-action="Index" method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label" for="searchTerm">Search</label>
+                <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.Filter.SearchTerm" placeholder="Name or description" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="category">Category</label>
+                <select class="form-select" id="category" name="category" asp-items="Model.AvailableCategories">
+                    <option value="">All categories</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-select" id="status" name="status" asp-items="Model.AvailableStatuses">
+                    <option value="">All statuses</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="userId">Owner</label>
+                <select class="form-select" id="userId" name="userId" asp-items="Model.AvailableUsers">
+                    <option value="">All owners</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="pageSize">Page size</label>
+                <select class="form-select" id="pageSize" name="pageSize">
+                    @foreach (var size in new[] { 5, 10, 25, 50 })
+                    {
+                        <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1 d-grid">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+
+            @* Applying a filter always returns to page 1: the current page may not exist in the new result set. *@
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="sortBy" value="@Model.Filter.SortBy" />
+            <input type="hidden" name="sortOrder" value="@Model.Filter.SortOrder" />
+
+            @if (Model.Filter.HasActiveFilters)
+            {
+                <div class="col-12">
+                    <a asp-action="Index" class="btn btn-sm btn-link px-0">
+                        <i class="bi bi-x-circle"></i> Clear filters
+                    </a>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-body">
-        @if (Model.Products.Any())
+        @if (Model.HasResults)
         {
             <div class="table-responsive">
                 <table class="table table-striped table-hover">
                     <thead class="table-dark">
                         <tr>
-                            <th>Name</th>
+                            <th>
+                                <a asp-action="Index" asp-all-route-data="Model.GetSortRouteValues(ProductSortBy.Name)" class="text-white text-decoration-none">
+                                    Name <i class="bi @Model.GetSortIcon(ProductSortBy.Name)"></i>
+                                </a>
+                            </th>
                             <th>Category</th>
-                            <th>Price</th>
+                            <th>
+                                <a asp-action="Index" asp-all-route-data="Model.GetSortRouteValues(ProductSortBy.Price)" class="text-white text-decoration-none">
+                                    Price <i class="bi @Model.GetSortIcon(ProductSortBy.Price)"></i>
+                                </a>
+                            </th>
                             <th>Stock</th>
                             <th>Owner</th>
                             <th>Status</th>
-                            <th>Created</th>
+                            <th>
+                                <a asp-action="Index" asp-all-route-data="Model.GetSortRouteValues(ProductSortBy.CreatedDate)" class="text-white text-decoration-none">
+                                    Created <i class="bi @Model.GetSortIcon(ProductSortBy.CreatedDate)"></i>
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -118,23 +188,62 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div class="text-muted small">
+                    Showing @Model.StartItem-@Model.EndItem of @Model.TotalItems products
+                </div>
+
+                @if (Model.HasMultiplePages)
+                {
+                    <nav aria-label="Products pagination">
+                        <ul class="pagination mb-0">
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                                <a class="page-link" asp-action="Index" asp-all-route-data="Model.GetPageRouteValues(1)">
+                                    <i class="bi bi-chevron-double-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                                <a class="page-link" asp-action="Index" asp-all-route-data="Model.GetPageRouteValues(Model.CurrentPage - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @{
+                                var startPage = Math.Max(1, Model.CurrentPage - 2);
+                                var endPage = Math.Min(Model.TotalPages, Model.CurrentPage + 2);
+                            }
+                            @for (var i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-all-route-data="Model.GetPageRouteValues(i)">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                <a class="page-link" asp-action="Index" asp-all-route-data="Model.GetPageRouteValues(Model.CurrentPage + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                                <a class="page-link" asp-action="Index" asp-all-route-data="Model.GetPageRouteValues(Model.TotalPages)">
+                                    <i class="bi bi-chevron-double-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
         }
         else
         {
             <div class="text-center py-5">
-                <h4 class="text-muted">No products found</h4>
-                <p class="text-muted">Create your first product to get started.</p>
+                <h4 class="text-muted">@Model.NoResultsMessage</h4>
+                <p class="text-muted">Try adjusting your filters, or create your first product to get started.</p>
                 <a asp-action="Create" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create New Product
                 </a>
             </div>
         }
-
-        @await Component.InvokeAsync("Pagination", Model.Pagination)
     </div>
 </div>
-
-@section Scripts {
-    <script src="~/js/Components/Pagination.js" asp-append-version="true"></script>
-    <script type="module" src="~/js/Pages/Products.js" asp-append-version="true"></script>
-}
