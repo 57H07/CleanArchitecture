@@ -13,25 +13,35 @@ CleanArchitecture/
 ├── CleanArchitecture.Domain/          # Core business entities and exceptions
 │   ├── Common/                        # Base entity class
 │   ├── Entities/                      # User and Product entities
-│   └── Exceptions/                    # Domain-specific exceptions
+│   ├── Enums/                         # UserRole, ProductStatus
+│   └── Exceptions/                    # Domain exception hierarchy
 ├── CleanArchitecture.Application/     # Application services and contracts
+│   ├── Collections/                   # PagedResult<T> and mapping extensions
 │   ├── DTOs/                         # Data Transfer Objects with validation
-│   ├── Interfaces/                   # Repository and service interfaces
-│   ├── Services/                     # Application services (User & Product)
-│   ├── Mappings/                     # Mapster configuration
-│   └── Exceptions/                   # Application-level exceptions
+│   ├── DependencyInjection/          # AddApplication() registration
+│   ├── Enums/                        # Sorting enums
+│   ├── Exceptions/                   # Application-level exceptions
+│   ├── Interfaces/                   # Repository, service and IPaginatedList contracts
+│   ├── Mappings/                     # Mapster IRegister configurations
+│   └── Services/                     # Application services (User & Product)
 ├── CleanArchitecture.Infrastructure/  # Data access and external concerns
+│   ├── Collections/                   # EF Core PaginatedList<T>
 │   ├── Data/                         # DbContext and entity configurations
-│   │   └── Configurations/           # Separate EF entity configurations
-│   ├── Repositories/                 # Repository implementations
-│   └── DependencyInjection/          # Service registration
-└── CleanArchitecture.Web/            # MVC presentation layer
-    ├── Controllers/                   # Home, Users, Products controllers
-    ├── Views/                        # Razor views with Bootstrap UI
-    ├── Models/                       # View models
-    ├── Middleware/                   # Global exception handling
-    └── wwwroot/                      # Static assets (CSS, JS, libraries)
+│   │   └── Configurations/           # Separate EF entity configurations + seed data
+│   ├── DependencyInjection/          # AddInfrastructure() registration
+│   └── Repositories/                 # Repository and Unit of Work implementations
+├── CleanArchitecture.Web/            # MVC presentation layer
+│   ├── Controllers/                   # Home, Users, Products controllers
+│   ├── Middleware/                   # Global exception handling
+│   ├── Models/                       # ErrorViewModel, ToastMessage
+│   ├── ViewComponents/               # Pagination view component
+│   ├── ViewModels/                   # List and paging view models
+│   ├── Views/                        # Razor views with Bootstrap UI
+│   └── wwwroot/                      # Static assets (CSS, JS, libraries)
+└── CleanArchitecture.Application.Tests/  # xUnit tests for application services
 ```
+
+Dependency direction is strict: Domain ← Application ← Infrastructure ← Web. Application references only Domain.
 
 ## 🚀 Technologies Used
 
@@ -40,6 +50,7 @@ CleanArchitecture/
 - **Mapping**: Mapster 10.0.12 for object-to-object mapping
 - **UI**: Bootstrap 5 with Bootstrap Icons
 - **Validation**: Data Annotations with client & server-side validation
+- **Testing**: xUnit, Moq, FluentAssertions, AutoFixture
 - **Development**: .NET 10.0 with nullable reference types enabled
 
 ## ✨ Features
@@ -48,28 +59,35 @@ CleanArchitecture/
 - **Base Entity**: Common properties for all entities (Id, CreatedAt, UpdatedAt, CreatedBy, UpdatedBy)
 - **User Entity**: Complete user model with validation and relationships
 - **Product Entity**: Product model with pricing, inventory, and categorization
-- **Domain Exceptions**: Custom exception classes for business rule violations
+- **Domain Exceptions**: Exception hierarchy (`DomainException`, `RessourceNotFoundException`, `InsufficientRightsException`, `ValidationDomaineException`) that the Web layer maps to HTTP status codes
 
 ### Application Layer
 - **Repository Pattern**: Data access abstraction with interfaces
-- **Unit of Work**: Transaction management pattern
+- **Unit of Work**: Single entry point for repositories, `SaveChangesAsync` and explicit transactions
 - **Service Layer**: UserService and ProductService for business logic
 - **DTOs**: Validated data transfer objects for Create/Update operations
-- **Mapster Integration**: Efficient object mapping between entities and DTOs
+- **Pagination Contract**: `IPaginatedList<T>` and `PagedResult<T>` so no `IQueryable` leaks above Infrastructure
+- **Cancellation**: Every service and repository method accepts and forwards a `CancellationToken`
+- **Mapster Integration**: `IRegister` mapping classes discovered by assembly scan
 
 ### Infrastructure Layer
 - **Entity Framework Core**: Code-first approach with SQL Server
 - **Separate Entity Configurations**: Individual configuration files for each entity
 - **Repository Implementation**: Concrete implementations of repository interfaces
-- **Database Seeding**: Pre-populated sample data for Users and Products
+- **EF Pagination**: `PaginatedList<T>.CreateAsync` materializes one page from an `IQueryable`
+- **Database Seeding**: Pre-populated sample data for Users and Products via `HasData`
 - **Dependency Injection**: Clean service registration and configuration
 
 ### Web Layer
 - **MVC Controllers**: Home, Users, and Products controllers with full CRUD
 - **Razor Views**: Server-side rendered views with Bootstrap 5 styling
+- **Pagination**: Reusable `PaginationViewComponent` driven by `PaginationViewModel`
 - **Form Validation**: Client and server-side validation with error display
-- **Global Exception Handling**: Middleware for centralized error management
+- **Global Exception Handling**: Middleware maps domain exceptions to 404/403/409/422, returns JSON for AJAX requests and a toast + redirect otherwise (active outside Development only)
 - **Responsive UI**: Mobile-friendly interface with Bootstrap components
+
+### Tests
+- **CleanArchitecture.Application.Tests**: xUnit tests for the application services, mocking `IUnitOfWork` with Moq and asserting with FluentAssertions
 
 ## 🛠️ Getting Started
 
@@ -111,6 +129,21 @@ CleanArchitecture/
    dotnet run --project .\CleanArchitecture.Web
    ```
 
+6. **Run the tests**
+   ```bash
+   dotnet test
+   dotnet test --filter "FullyQualifiedName~ProductServiceTests"   # one test class
+   ```
+
+### Upgrading the .NET version
+
+`Migrate-NetCore.ps1` updates every project's target framework and NuGet packages to a new .NET major version. Run it from the solution root:
+
+```powershell
+.\Migrate-NetCore.ps1 -TargetVersion 11 -WhatIfMode     # preview
+.\Migrate-NetCore.ps1 -TargetVersion 11 -AutoUpdatePackages
+```
+
 ## 📊 Sample Data
 
 The application includes pre-seeded data for demonstration:
@@ -126,8 +159,8 @@ The application includes pre-seeded data for demonstration:
 
 ### Database
 - Uses SQL Server LocalDB for development
-- Database created automatically on first run
-- Entity Framework ensures schema creation
+- No EF migrations: on **every startup** `Program.cs` calls `EnsureDeleted()` then `EnsureCreated()`, so the database is dropped, recreated from the model and reseeded
+- Any data entered through the UI is lost on the next run
 
 ## 🎯 What This Application Demonstrates
 
@@ -166,25 +199,27 @@ Follow the established pattern demonstrated by User and Product entities:
 
 1. **Create Domain Entity** in `CleanArchitecture.Domain/Entities/`
    - Inherit from `BaseEntity` for common properties
-   - Add domain-specific properties and validation
-2. **Add Repository Interface** in `CleanArchitecture.Application/Interfaces/`
-   - Define methods for data operations
+   - Put invariants in domain methods that throw domain exceptions
+2. **Add Repository Interface** in `CleanArchitecture.Application/Interfaces/Repositories/`
+   - Every method takes a trailing `CancellationToken`
+   - Expose it as a property on `IUnitOfWork`
 3. **Create DTOs** in `CleanArchitecture.Application/DTOs/`
    - Add validation attributes for data transfer objects
-4. **Create Entity Configuration** in `CleanArchitecture.Infrastructure/Data/Configurations/`
-   - Implement `IEntityTypeConfiguration<T>` for EF mapping
-5. **Implement Repository** in `CleanArchitecture.Infrastructure/Repositories/`
-   - Concrete implementation of repository interface
-6. **Add Service Interface** in `CleanArchitecture.Application/Interfaces/`
-   - Define business operations
-7. **Implement Service** in `CleanArchitecture.Application/Services/`
-   - Business logic implementation
+4. **Add Mapping** in `CleanArchitecture.Application/Mappings/`
+   - Implement Mapster `IRegister`; it is discovered automatically
+5. **Add Service Interface and Implementation** in `CleanArchitecture.Application/`
+   - Register the service in `Application/DependencyInjection/ServiceCollectionExtensions.cs` (`AddApplication`)
+6. **Create Entity Configuration** in `CleanArchitecture.Infrastructure/Data/Configurations/`
+   - Implement `IEntityTypeConfiguration<T>` for EF mapping and `HasData` seed
+7. **Implement Repository** in `CleanArchitecture.Infrastructure/Repositories/`
+   - Add the property to `UnitOfWork`
+   - Register the repository in `Infrastructure/DependencyInjection/ServiceCollectionExtensions.cs` (`AddInfrastructure`)
 8. **Create Controller** in `CleanArchitecture.Web/Controllers/`
    - MVC controller with CRUD actions
 9. **Add Views** in `CleanArchitecture.Web/Views/`
    - Razor views for the user interface
-10. **Register Services** in `DependencyInjection/ServiceCollectionExtensions.cs`
-    - Add new services to the DI container
+10. **Add Tests** in `CleanArchitecture.Application.Tests/Services/`
+    - Mock `IUnitOfWork` and build data with `TestDataBuilder`
 
 ## 📚 Architecture Patterns Implemented
 
@@ -216,7 +251,7 @@ Feel free to:
 
 ## 📄 License
 
-This project is provided as-is for educational and demonstration purposes.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 

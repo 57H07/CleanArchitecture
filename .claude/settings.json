@@ -1,0 +1,13 @@
+{
+  "enabledPlugins": {
+    "commit-message@stan": true
+  },
+  "extraKnownMarketplaces": {
+    "stan": {
+      "source": {
+        "source": "github",
+        "repo": "57H07/AI-Skills"
+      }
+    }
+  }
+}
