@@ -38,7 +38,7 @@ CleanArchitecture/
 │   ├── ViewModels/                   # List and paging view models
 │   ├── Views/                        # Razor views with Bootstrap UI
 │   └── wwwroot/                      # Static assets, including reusable JS helpers
-│       └── js/Helpers/               # ajax.js (fetch + antiforgery + validation) and toast.js (Bootstrap toasts)
+│       └── js/helpers/               # ajax.js (fetch + antiforgery + validation) and toast.js (Bootstrap toasts)
 └── CleanArchitecture.Application.Tests/  # xUnit tests for application services
 ```
 

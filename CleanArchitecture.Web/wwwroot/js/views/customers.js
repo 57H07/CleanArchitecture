@@ -1,6 +1,6 @@
-import Ajax from "./Helpers/ajax.js";
-import Toast from "./Helpers/toast.js";
-import Tooltip from "./Helpers/tooltip.js";
+import Ajax from "../helpers/ajax.js";
+import Toast from "../helpers/toast.js";
+import Tooltip from "../helpers/tooltip.js";
 
 const INDEX_URL = "/Customers";
 

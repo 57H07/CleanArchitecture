@@ -1,6 +1,3 @@
-// Owns the toggle for data-bs-theme. The inline head script in _Layout.cshtml reads
-// the same localStorage key first, so the resolved theme is applied before first paint.
-
 const STORAGE_KEY = "theme";
 const ORDER = ["auto", "light", "dark"];
 

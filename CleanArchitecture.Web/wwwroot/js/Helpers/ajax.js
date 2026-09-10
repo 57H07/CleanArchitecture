@@ -1,4 +1,4 @@
-// Generic vanilla-JS AJAX helper for Razor forms.
+// Generic vanilla-JS AJAX helper.
 // Handles the antiforgery token, JSON/FormData bodies, ModelState-shaped
 // validation errors, and distinguishing JSON error payloads from the
 // Development exception page (HTML) so callers never have to parse either by hand.
@@ -120,7 +120,6 @@ function applyValidationErrors(form, errors) {
     if (summaryMessages.length) {
         const summary = form.querySelector("[data-valmsg-summary]");
         if (summary) {
-            // textContent, not innerHTML: ModelState messages quote the submitted value.
             summary.replaceChildren(...summaryMessages.map((m) => {
                 const line = document.createElement("div");
                 line.textContent = m;

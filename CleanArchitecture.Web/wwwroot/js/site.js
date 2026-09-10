@@ -1,6 +1,6 @@
 ﻿import { Theme } from './theme.js';
-import Tooltip from './Helpers/tooltip.js';
-import Toast from './Helpers/toast.js';
+import Tooltip from './helpers/tooltip.js';
+import Toast from './helpers/toast.js';
 
 Theme.init();
 
