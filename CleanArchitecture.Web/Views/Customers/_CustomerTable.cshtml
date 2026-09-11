@@ -130,7 +130,7 @@
             @if (Model.Filter.HasActiveFilters)
             {
                 <p>Widen the search or clear the filters to see the full directory.</p>
-                <a href="/Customers" class="btn btn-quiet" id="customerEmptyClearBtn">Clear filters</a>
+                <a href="@Url.Action("Index", "Customers")" class="btn btn-quiet" id="customerEmptyClearBtn">Clear filters</a>
             }
             else
             {

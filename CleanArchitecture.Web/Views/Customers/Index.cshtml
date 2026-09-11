@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Customers";
+    const string idToken = "__id__";
 }
 
 <div class="page-head">
@@ -40,7 +41,7 @@
         <button type="submit" class="btn btn-quiet flex-grow-1">Apply</button>
         @if (Model.Filter.HasActiveFilters)
         {
-            <a href="/Customers" class="btn btn-link toolbar-clear px-2" id="customerClearFiltersBtn">Clear</a>
+            <a href="@Url.Action("Index")" class="btn btn-link toolbar-clear px-2" id="customerClearFiltersBtn">Clear</a>
         }
     </div>
 
@@ -53,6 +54,13 @@
 </div>
 
 @await Html.PartialAsync("_CustomerModal")
+
+<div id="customerUrls" hidden
+     data-index-url="@Url.Action("Index")"
+     data-details-url="@Url.Action("GetDetails", new { id = idToken })"
+     data-create-url="@Url.Action("Create")"
+     data-edit-url="@Url.Action("Edit", new { id = idToken })"
+     data-delete-url="@Url.Action("Delete", new { id = idToken })"></div>
 
 @section Scripts {
     <script type="module" src="~/js/views/customers.js" asp-append-version="true"></script>

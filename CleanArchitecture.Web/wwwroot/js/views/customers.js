@@ -2,15 +2,16 @@ import Ajax from "../helpers/ajax.js";
 import Toast from "../helpers/toast.js";
 import Tooltip from "../helpers/tooltip.js";
 
-const INDEX_URL = "/Customers";
-
 const tableContainer = document.getElementById("customerTableWrapper");
 const filterForm = document.getElementById("customerFilterForm");
 const customerForm = document.getElementById("customerForm");
 const customerModalEl = document.getElementById("customerModal");
 const deleteModalEl = document.getElementById("customerDeleteModal");
+const urlsEl = document.getElementById("customerUrls");
 
-if (tableContainer && filterForm && customerForm && customerModalEl && deleteModalEl) {
+if (tableContainer && filterForm && customerForm && customerModalEl && deleteModalEl && urlsEl) {
+    const urls = urlsEl.dataset;
+    const withId = (template, id) => template.replace("__id__", encodeURIComponent(id));
     const customerModal = new bootstrap.Modal(customerModalEl);
     const deleteModal = new bootstrap.Modal(deleteModalEl);
     const submitBtn = document.getElementById("customerSubmitBtn");
@@ -39,7 +40,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
 
     async function loadCustomers(route) {
         const query = new URLSearchParams(route).toString();
-        const url = query ? `${INDEX_URL}?${query}` : INDEX_URL;
+        const url = query ? `${urls.indexUrl}?${query}` : urls.indexUrl;
 
         // Fade the list while it is being replaced
         tableContainer.classList.add("is-loading");
@@ -123,7 +124,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
     async function openEditModal(id) {
         resetForm();
         try {
-            const { body: customer } = await Ajax.get(`${INDEX_URL}/GetDetails/${id}`);
+            const { body: customer } = await Ajax.get(withId(urls.detailsUrl, id));
             document.getElementById("customerModalLabel").textContent = "Edit customer";
             document.getElementById("customerId").value = customer.id;
             document.getElementById("customerName").value = customer.name ?? "";
@@ -142,7 +143,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         event.preventDefault();
 
         const id = document.getElementById("customerId").value;
-        const url = id ? `${INDEX_URL}/Edit/${id}` : `${INDEX_URL}/Create`;
+        const url = id ? withId(urls.editUrl, id) : urls.createUrl;
 
         setBusy(submitBtn, submitSpinner, true);
         let saved = false;
@@ -177,7 +178,7 @@ if (tableContainer && filterForm && customerForm && customerModalEl && deleteMod
         setBusy(deleteConfirmBtn, deleteSpinner, true);
         let deleted = false;
         try {
-            const { body } = await Ajax.post(`${INDEX_URL}/Delete/${pendingDeleteId}`);
+            const { body } = await Ajax.post(withId(urls.deleteUrl, pendingDeleteId));
             deleteModal.hide();
             Toast.success(body.message);
             deleted = true;
