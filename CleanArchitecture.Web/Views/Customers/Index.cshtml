@@ -2,20 +2,19 @@
 
 @{
     ViewData["Title"] = "Customers";
-    const string idToken = "__id__";
 }
 
 <div class="page-head">
     <h1>Customers</h1>
     <div class="d-flex align-items-center gap-3">
-        <span class="page-count">@Model.TotalItems @(Model.TotalItems == 1 ? "customer" : "customers")</span>
-        <button type="button" class="btn btn-primary" id="customerCreateBtn">
+        <span class="page-count" id="customerCount">@Model.TotalItems @(Model.TotalItems == 1 ? "customer" : "customers")</span>
+        <button type="button" class="btn btn-primary" data-action="create" data-url="@Url.Action("Form")">
             <i class="bi bi-plus-lg"></i> New customer
         </button>
     </div>
 </div>
 
-<form id="customerFilterForm" class="toolbar row g-2 align-items-end">
+<form id="customerFilterForm" class="toolbar row g-2 align-items-end" action="@Url.Action("Index")" method="get">
     <div class="col-12 col-md-5 col-lg-4">
         <label class="form-label" for="searchTerm">Search</label>
         <input type="text" class="form-control" id="searchTerm" name="searchTerm" value="@Model.Filter.SearchTerm" placeholder="Name, email or company" />
@@ -39,10 +38,8 @@
     </div>
     <div class="col-12 col-lg-2 d-flex gap-2">
         <button type="submit" class="btn btn-quiet flex-grow-1">Apply</button>
-        @if (Model.Filter.HasActiveFilters)
-        {
-            <a href="@Url.Action("Index")" class="btn btn-link toolbar-clear px-2" id="customerClearFiltersBtn">Clear</a>
-        }
+        <a href="@Url.Action("Index")" class="btn btn-link toolbar-clear px-2" id="customerClearBtn"
+           data-action="clear-filters" hidden="@(!Model.Filter.HasActiveFilters)">Clear</a>
     </div>
 
     <input type="hidden" name="sortBy" value="@Model.Filter.SortBy" />
@@ -53,15 +50,41 @@
     @await Html.PartialAsync("_CustomerTable", Model)
 </div>
 
-@await Html.PartialAsync("_CustomerModal")
+@* Empty shell: the Form action renders the form into #customerFormHost. Keeping the outer
+   element static keeps the bootstrap.Modal instance stable across openings. *@
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" id="customerFormHost"></div>
+    </div>
+</div>
 
-<div id="customerUrls" hidden
-     data-index-url="@Url.Action("Index")"
-     data-details-url="@Url.Action("GetDetails", new { id = idToken })"
-     data-create-url="@Url.Action("Create")"
-     data-edit-url="@Url.Action("Edit", new { id = idToken })"
-     data-delete-url="@Url.Action("Delete", new { id = idToken })"></div>
+<div class="modal fade" id="customerDeleteModal" tabindex="-1" aria-labelledby="customerDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="customerDeleteModalLabel">Delete customer</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert-inline">
+                    <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                    <div>Deleting <strong id="customerDeleteName"></strong> removes the record permanently. This cannot be undone.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @* The edit form carries its own token, but delete posts without one on the page. *@
+                @Html.AntiForgeryToken()
+                <button type="button" class="btn btn-quiet" data-bs-dismiss="modal">Keep customer</button>
+                <button type="button" class="btn btn-danger" id="customerDeleteConfirmBtn" data-action="confirm-delete">
+                    <span class="spinner-border spinner-border-sm d-none me-1" id="customerDeleteSpinner" role="status" aria-hidden="true"></span>
+                    Delete customer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script type="module" src="~/js/views/customers.js" asp-append-version="true"></script>
 }

@@ -1,5 +1,4 @@
 // Creates/reuses a single bottom-right toast-container.
-// Views/Shared/_Toast.cshtml builds the same markup server-side; keep the two in step.
 
 const VARIANTS = {
     success: { color: "success", icon: "bi-check-circle-fill", header: "Success" },

@@ -2,7 +2,10 @@
 @using System.Text.Json
 @model CleanArchitecture.Web.ViewModels.CustomersViewModel
 
-<div id="customerTableContainer">
+@* The page head and the toolbar sit outside the swapped region: they follow this partial through these attributes. *@
+<div id="customerTableContainer"
+     data-count-label="@Model.TotalItems @(Model.TotalItems == 1 ? "customer" : "customers")"
+     data-has-filters="@(Model.Filter.HasActiveFilters ? "true" : "false")">
     @if (Model.HasResults)
     {
         <div class="table-responsive">
@@ -10,7 +13,7 @@
                 <thead>
                     <tr>
                         <th scope="col">
-                            <a href="#" class="th-sort customer-sort-link"
+                            <a href="#" class="th-sort" data-action="navigate"
                                data-sorted="@(Model.IsSortedBy(CustomerSortBy.Name) ? "true" : null)"
                                data-route="@JsonSerializer.Serialize(Model.GetSortRouteValues(CustomerSortBy.Name))">
                                 Name <i class="bi @Model.GetSortIcon(CustomerSortBy.Name)"></i>
@@ -19,7 +22,7 @@
                         <th scope="col">Email</th>
                         <th scope="col">Phone</th>
                         <th scope="col">
-                            <a href="#" class="th-sort customer-sort-link"
+                            <a href="#" class="th-sort" data-action="navigate"
                                data-sorted="@(Model.IsSortedBy(CustomerSortBy.Company) ? "true" : null)"
                                data-route="@JsonSerializer.Serialize(Model.GetSortRouteValues(CustomerSortBy.Company))">
                                 Company <i class="bi @Model.GetSortIcon(CustomerSortBy.Company)"></i>
@@ -27,7 +30,7 @@
                         </th>
                         <th scope="col">Status</th>
                         <th scope="col" class="num">
-                            <a href="#" class="th-sort customer-sort-link"
+                            <a href="#" class="th-sort" data-action="navigate"
                                data-sorted="@(Model.IsSortedBy(CustomerSortBy.CreatedDate) ? "true" : null)"
                                data-route="@JsonSerializer.Serialize(Model.GetSortRouteValues(CustomerSortBy.CreatedDate))">
                                 Created <i class="bi @Model.GetSortIcon(CustomerSortBy.CreatedDate)"></i>
@@ -57,11 +60,13 @@
                             <td class="num">@customer.CreatedAt.ToString("dd MMM yyyy")</td>
                             <td>
                                 <div class="row-actions">
-                                    <button type="button" class="btn-icon customer-edit-btn" data-id="@customer.Id"
+                                    <button type="button" class="btn-icon" data-action="edit"
+                                            data-url="@Url.Action("Form", new { id = customer.Id })"
                                             data-bs-toggle="tooltip" title="Edit" aria-label="Edit @customer.Name">
                                         <i class="bi bi-pencil"></i>
                                     </button>
-                                    <button type="button" class="btn-icon is-danger customer-delete-btn" data-id="@customer.Id" data-name="@customer.Name"
+                                    <button type="button" class="btn-icon is-danger" data-action="delete"
+                                            data-url="@Url.Action("Delete", new { id = customer.Id })" data-name="@customer.Name"
                                             data-bs-toggle="tooltip" title="Delete" aria-label="Delete @customer.Name">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -81,13 +86,13 @@
                 <nav aria-label="Customers pages">
                     <ul class="pagination mb-0">
                         <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                            <a class="page-link customer-page-link" href="#" aria-label="First page"
+                            <a class="page-link" data-action="navigate" href="#" aria-label="First page"
                                data-route="@JsonSerializer.Serialize(Model.GetPageRouteValues(1))">
                                 <i class="bi bi-chevron-double-left"></i>
                             </a>
                         </li>
                         <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                            <a class="page-link customer-page-link" href="#" aria-label="Previous page"
+                            <a class="page-link" data-action="navigate" href="#" aria-label="Previous page"
                                data-route="@JsonSerializer.Serialize(Model.GetPageRouteValues(Model.CurrentPage - 1))">
                                 <i class="bi bi-chevron-left"></i>
                             </a>
@@ -100,19 +105,19 @@
                         @for (var i = startPage; i <= endPage; i++)
                         {
                             <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                                <a class="page-link customer-page-link" href="#"
+                                <a class="page-link" data-action="navigate" href="#"
                                    data-route="@JsonSerializer.Serialize(Model.GetPageRouteValues(i))">@i</a>
                             </li>
                         }
 
                         <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                            <a class="page-link customer-page-link" href="#" aria-label="Next page"
+                            <a class="page-link" data-action="navigate" href="#" aria-label="Next page"
                                data-route="@JsonSerializer.Serialize(Model.GetPageRouteValues(Model.CurrentPage + 1))">
                                 <i class="bi bi-chevron-right"></i>
                             </a>
                         </li>
                         <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                            <a class="page-link customer-page-link" href="#" aria-label="Last page"
+                            <a class="page-link" data-action="navigate" href="#" aria-label="Last page"
                                data-route="@JsonSerializer.Serialize(Model.GetPageRouteValues(Model.TotalPages))">
                                 <i class="bi bi-chevron-double-right"></i>
                             </a>
@@ -130,12 +135,12 @@
             @if (Model.Filter.HasActiveFilters)
             {
                 <p>Widen the search or clear the filters to see the full directory.</p>
-                <a href="@Url.Action("Index", "Customers")" class="btn btn-quiet" id="customerEmptyClearBtn">Clear filters</a>
+                <a href="@Url.Action("Index", "Customers")" class="btn btn-quiet" data-action="clear-filters">Clear filters</a>
             }
             else
             {
                 <p>Add a customer and it will show up here, ready to own products.</p>
-                <button type="button" class="btn btn-primary" id="customerEmptyCreateBtn">Add the first customer</button>
+                <button type="button" class="btn btn-primary" data-action="create" data-url="@Url.Action("Form")">Add the first customer</button>
             }
         </div>
     }

@@ -10,6 +10,8 @@ public class CustomerMappings : IRegister
     {
         config.NewConfig<Customer, CustomerDto>();
 
+        config.NewConfig<CustomerDto, CreateCustomerDto>();
+
         config.NewConfig<CreateCustomerDto, Customer>()
             .IgnoreNullValues(false);
     }

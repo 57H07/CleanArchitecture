@@ -2,16 +2,13 @@ using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Application.Interfaces.Services;
 using CleanArchitecture.Domain.Exceptions;
+using CleanArchitecture.Web.Extensions;
 using CleanArchitecture.Web.ViewModels;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.Web.Controllers;
 
-// The AJAX counterpart to ProductsController: every mutating action answers with JSON that
-// wwwroot/js/views/customers.js renders into the modal. Field-level failures are shaped as
-// { errors: { Field: message } } so the client can attach them to the right input;
-// everything else falls through to GlobalExceptionMiddleware, which returns
-// { error: { message } } for XHR - the shape ajax.js already understands.
 public class CustomersController : Controller
 {
     private readonly ICustomerService _customerService;
@@ -29,21 +26,27 @@ public class CustomersController : Controller
 
         var viewModel = new CustomersViewModel { Customers = customers, Filter = filter };
 
-        return IsAjaxRequest() ? PartialView("_CustomerTable", viewModel) : View(viewModel);
+        return Request.IsAjaxRequest() ? PartialView("_CustomerTable", viewModel) : View(viewModel);
     }
 
-    // GET: Customers/GetDetails/5
-    // Feeds the edit modal via AJAX.
+    // GET: Customers/Form or Customers/Form/5
     [HttpGet]
-    public async Task<IActionResult> GetDetails(int id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Form(int? id, CancellationToken cancellationToken)
     {
-        var customer = await _customerService.GetByIdAsync(id, cancellationToken);
+        if (id is null)
+        {
+            return PartialView("_CustomerForm", new CreateCustomerDto());
+        }
+
+        var customer = await _customerService.GetByIdAsync(id.Value, cancellationToken);
         if (customer == null)
         {
             return NotFound(new { message = $"Customer with ID {id} was not found." });
         }
 
-        return Json(customer);
+        ViewData["CustomerId"] = customer.Id;
+
+        return PartialView("_CustomerForm", customer.Adapt<CreateCustomerDto>());
     }
 
     // POST: Customers/Create
@@ -53,7 +56,7 @@ public class CustomersController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new { errors = ModelStateErrors() });
+            return BadRequest(new { errors = ModelState.ToErrorDictionary() });
         }
 
         try
@@ -79,7 +82,7 @@ public class CustomersController : Controller
     {
         if (!ModelState.IsValid)
         {
-            return BadRequest(new { errors = ModelStateErrors() });
+            return BadRequest(new { errors = ModelState.ToErrorDictionary() });
         }
 
         try
@@ -122,13 +125,4 @@ public class CustomersController : Controller
             return UnprocessableEntity(new { message = ex.Message });
         }
     }
-
-    private bool IsAjaxRequest() => Request.Headers.XRequestedWith == "XMLHttpRequest";
-
-    private Dictionary<string, string> ModelStateErrors() =>
-        ModelState
-            .Where(kvp => kvp.Value?.Errors.Count > 0)
-            .ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value!.Errors[0].ErrorMessage);
 }

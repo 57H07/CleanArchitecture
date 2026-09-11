@@ -1,5 +1,5 @@
-// Tooltips render into document.body, so a trigger removed from the DOM leaves its tip
-// behind. Call disposeTooltips() on the old content before replacing markup.
+// Tooltips render into document.body
+// Call disposeTooltips() on the old content before replacing markup.
 
 const SELECTOR = "[data-bs-toggle='tooltip']";
 

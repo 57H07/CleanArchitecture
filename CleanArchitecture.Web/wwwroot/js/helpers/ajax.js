@@ -72,23 +72,29 @@ async function request(url, options = {}) {
     return parseResponse(response);
 }
 
+function markMessage(element, hasError) {
+    element.classList.toggle("field-validation-error", hasError);
+    element.classList.toggle("field-validation-valid", !hasError);
+}
+
 /** Clears any validation UI previously applied by applyValidationErrors(). */
 function clearValidationErrors(form) {
     form.querySelectorAll(".is-invalid").forEach((el) => el.classList.remove("is-invalid"));
     form.querySelectorAll("[data-valmsg-for]").forEach((el) => {
         el.textContent = "";
+        markMessage(el, false);
     });
     const summary = form.querySelector("[data-valmsg-summary]");
     if (summary) {
         summary.replaceChildren();
+        summary.classList.remove("validation-summary-errors");
+        summary.classList.add("validation-summary-valid");
         summary.hidden = true;
     }
 }
 
 /**
  * Applies a ModelState-shaped error dictionary ({ FieldName: "message" | ["message", ...] })
- * onto a Razor form's asp-validation-for spans (matched via data-valmsg-for) and marks
- * the matching inputs invalid. Unmatched (e.g. "") entries go into a [data-valmsg-summary] element if present.
  */
 function applyValidationErrors(form, errors) {
     clearValidationErrors(form);
@@ -109,6 +115,7 @@ function applyValidationErrors(form, errors) {
         if (input) input.classList.add("is-invalid");
         if (span) {
             span.textContent = message;
+            markMessage(span, true);
         } else {
             summaryMessages.push(message);
         }
@@ -122,6 +129,8 @@ function applyValidationErrors(form, errors) {
                 line.textContent = m;
                 return line;
             }));
+            summary.classList.remove("validation-summary-valid");
+            summary.classList.add("validation-summary-errors");
             summary.hidden = false;
         }
     }
@@ -132,7 +141,6 @@ const Ajax = {
     post: (url, data, options) => request(url, { ...options, method: "POST", data }),
     put: (url, data, options) => request(url, { ...options, method: "PUT", data }),
     delete: (url, options) => request(url, { ...options, method: "DELETE" }),
-    /** Submits a Razor <form> (and its antiforgery token) as multipart/urlencoded FormData. */
     submitForm: (form, options) => request(options?.url || form.getAttribute("action") || window.location.href, {
         ...options,
         method: options?.method || form.getAttribute("method") || "POST",

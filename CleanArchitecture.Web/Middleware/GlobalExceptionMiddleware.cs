@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Domain.Exceptions;
+using CleanArchitecture.Web.Extensions;
 using CleanArchitecture.Web.Models;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -117,7 +118,7 @@ public class GlobalExceptionMiddleware
 
     private static bool ExpectsJson(HttpContext context)
     {
-        if (context.Request.Headers.XRequestedWith == "XMLHttpRequest")
+        if (context.Request.IsAjaxRequest())
         {
             return true;
         }

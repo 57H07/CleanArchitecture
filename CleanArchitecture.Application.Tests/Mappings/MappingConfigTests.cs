@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Tests.Helpers;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
@@ -59,6 +59,31 @@ public class MappingConfigTests
         customer.CreatedAt.Should().Be(createdAt);
         customer.CreatedBy.Should().Be("System");
         customer.Name.Should().Be("Alice Moreau");
+    }
+
+    [Fact]
+    public void CustomerDto_AdaptedToCreateDto_ShouldCarryEveryEditableField()
+    {
+        var dto = new CustomerDto
+        {
+            Id = 7,
+            Name = "Alice Martin",
+            Email = "alice@example.test",
+            Phone = "+1 555-0101",
+            Company = "Northwind Traders",
+            Notes = "Prefers email",
+            IsActive = false,
+            CreatedAt = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+        };
+
+        var editable = dto.Adapt<CreateCustomerDto>();
+
+        editable.Name.Should().Be(dto.Name);
+        editable.Email.Should().Be(dto.Email);
+        editable.Phone.Should().Be(dto.Phone);
+        editable.Company.Should().Be(dto.Company);
+        editable.Notes.Should().Be(dto.Notes);
+        editable.IsActive.Should().BeFalse();
     }
 
     [Fact]
