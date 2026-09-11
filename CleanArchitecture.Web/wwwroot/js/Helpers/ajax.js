@@ -1,7 +1,4 @@
 // Generic vanilla-JS AJAX helper.
-// Handles the antiforgery token, JSON/FormData bodies, ModelState-shaped
-// validation errors, and distinguishing JSON error payloads from the
-// Development exception page (HTML) so callers never have to parse either by hand.
 
 const TOKEN_FIELD_NAME = "__RequestVerificationToken";
 const TOKEN_HEADER_NAME = "RequestVerificationToken";
