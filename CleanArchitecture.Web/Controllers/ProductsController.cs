@@ -1,9 +1,12 @@
-﻿using CleanArchitecture.Application.Collections;
+using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
-using CleanArchitecture.Application.Enums;
-using CleanArchitecture.Domain.Enums;
-using CleanArchitecture.Web.ViewModels;
+using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Application.Interfaces.Services;
+using CleanArchitecture.Domain.Enums;
+using CleanArchitecture.Domain.Exceptions;
+using CleanArchitecture.Web.Extensions;
+using CleanArchitecture.Web.ViewModels;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -11,258 +14,176 @@ namespace CleanArchitecture.Web.Controllers;
 
 public class ProductsController : Controller
 {
+    private const string ProductEntity = "Product";
+
     private readonly IProductService _productService;
     private readonly ICustomerService _customerService;
-    private readonly ILogger<ProductsController> _logger;
 
-    public ProductsController(
-        IProductService productService, 
-        ICustomerService customerService, 
-        ILogger<ProductsController> logger)
+    public ProductsController(IProductService productService, ICustomerService customerService)
     {
         _productService = productService;
         _customerService = customerService;
-        _logger = logger;
     }
 
     // GET: Products
-    // Supports server-side paging, filtering and sorting via query string, e.g.
-    // /Products?category=Electronics&status=Active&sortBy=Price&sortOrder=Descending
-    public async Task<IActionResult> Index([FromQuery] ProductFilterDto filter)
+    // Server-side paging, filtering and sorting via query string, e.g.
+    public async Task<IActionResult> Index([FromQuery] ProductFilterDto filter, CancellationToken cancellationToken)
     {
-        try
-        {
-            PagedResult<ProductDto> products = await _productService.GetPagedAsync(filter);
+        var products = await _productService.GetPagedAsync(filter, cancellationToken);
 
-            return View(await BuildViewModelAsync(products, filter));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while retrieving products");
-            TempData["Error"] = "An error occurred while loading products.";
-
-            var empty = PagedResult<ProductDto>.Empty(filter.Page, filter.PageSize);
-
-            return View(await BuildViewModelAsync(empty, filter));
-        }
+        return View(await BuildViewModelAsync(products, filter, cancellationToken));
     }
 
     // GET: Products/Details/5
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return View(product);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while retrieving product {ProductId}", id);
-            TempData["Error"] = "An error occurred while loading product details.";
-            return RedirectToAction(nameof(Index));
-        }
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
+
+        return product is null ? NotFound() : View(product);
     }
 
     // GET: Products/Create
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken)
     {
-        await PopulateCustomersDropDown();
+        await PopulateFormListsAsync(cancellationToken);
+
         return View();
     }
 
     // POST: Products/Create
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateProductDto createProductDto)
+    public async Task<IActionResult> Create(CreateProductDto createProductDto, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
             try
             {
-                await _productService.CreateAsync(createProductDto);
-                TempData["Success"] = "Product created successfully!";
+                await _productService.CreateAsync(createProductDto, cancellationToken);
+                this.NotifySuccess("Product created successfully!");
+
                 return RedirectToAction(nameof(Index));
             }
-            catch (KeyNotFoundException ex)
+            catch (EntityNotFoundException ex)
             {
-                ModelState.AddModelError("CustomerId", ex.Message);
+                ModelState.AddModelError(nameof(CreateProductDto.CustomerId), ex.Message);
             }
-            catch (Exception ex)
+            catch (ValidationDomaineException ex)
             {
-                _logger.LogError(ex, "Error occurred while creating product");
-                ModelState.AddModelError("", "An error occurred while creating the product.");
+                ModelState.AddModelError(ex.FieldName, ex.Message);
             }
         }
-        
-        await PopulateCustomersDropDown(createProductDto.CustomerId);
+
+        await PopulateFormListsAsync(cancellationToken, createProductDto.CustomerId);
+
         return View(createProductDto);
     }
 
     // GET: Products/Edit/5
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
     {
-        try
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
+        if (product is null)
         {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            var editDto = new CreateProductDto
-            {
-                Name = product.Name,
-                Description = product.Description,
-                Price = product.Price,
-                StockQuantity = product.StockQuantity,
-                Category = product.Category,
-                Status = product.Status,
-                CustomerId = product.CustomerId
-            };
-
-            await PopulateCustomersDropDown(editDto.CustomerId);
-            return View(editDto);
+            return NotFound();
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while retrieving product {ProductId} for editing", id);
-            TempData["Error"] = "An error occurred while loading product for editing.";
-            return RedirectToAction(nameof(Index));
-        }
+
+        var editDto = product.Adapt<CreateProductDto>();
+
+        await PopulateFormListsAsync(cancellationToken, editDto.CustomerId);
+
+        return View(editDto);
     }
 
     // POST: Products/Edit/5
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, CreateProductDto updateProductDto)
+    public async Task<IActionResult> Edit(int id, CreateProductDto updateProductDto, CancellationToken cancellationToken)
     {
         if (ModelState.IsValid)
         {
             try
             {
-                await _productService.UpdateAsync(id, updateProductDto);
-                TempData["Success"] = "Product updated successfully!";
+                await _productService.UpdateAsync(id, updateProductDto, cancellationToken);
+                this.NotifySuccess("Product updated successfully!");
+
                 return RedirectToAction(nameof(Index));
             }
-            catch (KeyNotFoundException ex)
+            catch (EntityNotFoundException ex) when (ex.EntityName == ProductEntity)
             {
-                if (ex.Message.Contains("Product"))
-                {
-                    return NotFound();
-                }
-                ModelState.AddModelError("CustomerId", ex.Message);
+                return NotFound();
             }
-            catch (Exception ex)
+            catch (EntityNotFoundException ex)
             {
-                _logger.LogError(ex, "Error occurred while updating product {ProductId}", id);
-                ModelState.AddModelError("", "An error occurred while updating the product.");
+                ModelState.AddModelError(nameof(CreateProductDto.CustomerId), ex.Message);
+            }
+            catch (ValidationDomaineException ex)
+            {
+                ModelState.AddModelError(ex.FieldName, ex.Message);
             }
         }
-        
-        await PopulateCustomersDropDown(updateProductDto.CustomerId);
+
+        await PopulateFormListsAsync(cancellationToken, updateProductDto.CustomerId);
+
         return View(updateProductDto);
     }
 
     // GET: Products/Delete/5
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var product = await _productService.GetByIdAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return View(product);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while retrieving product {ProductId} for deletion", id);
-            TempData["Error"] = "An error occurred while loading product for deletion.";
-            return RedirectToAction(nameof(Index));
-        }
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
+
+        return product is null ? NotFound() : View(product);
     }
 
     // POST: Products/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int id)
+    public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
     {
-        try
-        {
-            await _productService.DeleteAsync(id);
-            TempData["Success"] = "Product deleted successfully!";
-            return RedirectToAction(nameof(Index));
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while deleting product {ProductId}", id);
-            TempData["Error"] = "An error occurred while deleting the product.";
-            return RedirectToAction(nameof(Index));
-        }
+        await _productService.DeleteAsync(id, cancellationToken);
+        this.NotifySuccess("Product deleted successfully!");
+
+        return RedirectToAction(nameof(Index));
     }
 
-    private async Task<ProductsViewModel> BuildViewModelAsync(PagedResult<ProductDto> products, ProductFilterDto filter)
+    private async Task<ProductsViewModel> BuildViewModelAsync(
+        PagedResult<ProductDto> products,
+        ProductFilterDto filter,
+        CancellationToken cancellationToken)
     {
-        var viewModel = new ProductsViewModel
+        var categories = (await _productService.GetDistinctCategoriesAsync(cancellationToken))
+            .Select(c => new { Value = c, Text = c });
+
+        var statuses = Enum.GetValues<ProductStatus>()
+            .Select(s => new { Value = s.ToString(), Text = s.ToString() });
+
+        var customers = await _customerService.GetAllAsync(cancellationToken);
+
+        return new ProductsViewModel
         {
             Products = products,
-            Filter = filter
+            Filter = filter,
+            AvailableCategories = new SelectList(categories, "Value", "Text", filter.Category),
+            AvailableStatuses = new SelectList(statuses, "Value", "Text", filter.Status?.ToString()),
+            AvailableCustomers = new SelectList(customers, "Id", "Name", filter.CustomerId)
         };
-
-        try
-        {
-            var categories = (await _productService.GetDistinctCategoriesAsync())
-                .Select(c => new { Value = c, Text = c });
-            viewModel.AvailableCategories = new SelectList(categories, "Value", "Text", filter.Category);
-
-            var statuses = Enum.GetValues<ProductStatus>()
-                .Select(s => new { Value = s.ToString(), Text = s.ToString() });
-            viewModel.AvailableStatuses = new SelectList(statuses, "Value", "Text", filter.Status?.ToString());
-
-            // Deactivating a customer does not reassign their products, so the filter
-            // must list every customer, not just the active ones.
-            var customers = await _customerService.GetAllAsync();
-            viewModel.AvailableCustomers = new SelectList(customers, "Id", "Name", filter.CustomerId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while loading product filters");
-        }
-
-        return viewModel;
     }
 
-    private async Task PopulateCustomersDropDown(int? selectedCustomerId = null)
+    private async Task PopulateFormListsAsync(CancellationToken cancellationToken, int? selectedCustomerId = null)
     {
-        try
-        {
-            var customers = (await _customerService.GetActiveCustomersAsync()).ToList();
+        var customers = (await _customerService.GetActiveCustomersAsync(cancellationToken)).ToList();
 
-            if (selectedCustomerId is int id && customers.All(c => c.Id != id))
+        if (selectedCustomerId is int id && customers.All(c => c.Id != id))
+        {
+            var owner = await _customerService.GetByIdAsync(id, cancellationToken);
+            if (owner != null)
             {
-                var owner = await _customerService.GetByIdAsync(id);
-                if (owner != null)
-                {
-                    owner.Name = $"{owner.Name} (inactive)";
-                    customers.Add(owner);
-                }
+                owner.Name = $"{owner.Name} (inactive)";
+                customers.Add(owner);
             }
+        }
 
-            ViewBag.Customers = new SelectList(customers.OrderBy(c => c.Name), "Id", "Name", selectedCustomerId);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while loading customers for dropdown");
-            ViewBag.Customers = new SelectList(new List<CustomerDto>(), "Id", "Name");
-        }
+        ViewBag.Customers = new SelectList(customers.OrderBy(c => c.Name), "Id", "Name", selectedCustomerId);
     }
 }

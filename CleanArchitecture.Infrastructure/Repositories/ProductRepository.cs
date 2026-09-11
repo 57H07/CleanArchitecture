@@ -2,6 +2,7 @@ using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Enums;
 using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Domain.Enums;
 using CleanArchitecture.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using CleanArchitecture.Application.Interfaces.Collections;
@@ -28,6 +29,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Customer)
             .ToListAsync(cancellationToken);
     }
@@ -35,6 +37,7 @@ public class ProductRepository : IProductRepository
     public async Task<IPaginatedList<Product>> GetPagedAsync(ProductFilterDto filter, CancellationToken cancellationToken = default)
     {
         var query = _context.Products
+            .AsNoTracking()
             .Include(p => p.Customer)
             .AsQueryable();
 
@@ -86,6 +89,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetByCustomerIdAsync(int customerId, CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Customer)
             .Where(p => p.CustomerId == customerId)
             .ToListAsync(cancellationToken);
@@ -94,6 +98,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetByCategoryAsync(string category, CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Customer)
             .Where(p => p.Category == category)
             .ToListAsync(cancellationToken);
@@ -102,8 +107,9 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<Product>> GetAvailableProductsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Include(p => p.Customer)
-            .Where(p => p.IsAvailable && p.StockQuantity > 0)
+            .Where(p => p.Status == ProductStatus.Active && p.StockQuantity > 0)
             .ToListAsync(cancellationToken);
     }
 
@@ -135,6 +141,7 @@ public class ProductRepository : IProductRepository
     public async Task<IEnumerable<string>> GetDistinctCategoriesAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Products
+            .AsNoTracking()
             .Where(p => p.Category != null)
             .Select(p => p.Category!)
             .Distinct()

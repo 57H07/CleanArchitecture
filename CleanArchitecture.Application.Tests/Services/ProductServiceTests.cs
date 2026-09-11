@@ -1,4 +1,5 @@
 using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Application.Interfaces.Repositories;
 using CleanArchitecture.Application.Services;
 using CleanArchitecture.Application.Tests.Helpers;
@@ -105,7 +106,7 @@ public class ProductServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenCustomerDoesNotExist_ShouldThrowKeyNotFoundException()
+    public async Task CreateAsync_WhenCustomerDoesNotExist_ShouldThrowEntityNotFound()
     {
         // Arrange
         var createDto = TestDataBuilder.CreateValidProductDto("Test Product", 999);
@@ -115,8 +116,9 @@ public class ProductServiceTests
 
         // Act & Assert
         var act = async () => await _productService.CreateAsync(createDto);
-        await act.Should().ThrowAsync<KeyNotFoundException>()
-            .WithMessage("Customer with ID 999 not found.");
+        (await act.Should().ThrowAsync<EntityNotFoundException>()
+            .WithMessage("Customer with ID '999' was not found."))
+            .Which.EntityName.Should().Be("Customer");
     }
 
     [Fact]

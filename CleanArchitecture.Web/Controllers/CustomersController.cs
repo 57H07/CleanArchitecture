@@ -1,4 +1,3 @@
-using CleanArchitecture.Application.Collections;
 using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Application.Interfaces.Services;
@@ -8,35 +7,25 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CleanArchitecture.Web.Controllers;
 
+// The AJAX counterpart to ProductsController: every mutating action answers with JSON that
+// wwwroot/js/views/customers.js renders into the modal. Field-level failures are shaped as
+// { errors: { Field: message } } so the client can attach them to the right input;
+// everything else falls through to GlobalExceptionMiddleware, which returns
+// { error: { message } } for XHR - the shape ajax.js already understands.
 public class CustomersController : Controller
 {
     private readonly ICustomerService _customerService;
-    private readonly ILogger<CustomersController> _logger;
 
-    public CustomersController(ICustomerService customerService, ILogger<CustomersController> logger)
+    public CustomersController(ICustomerService customerService)
     {
         _customerService = customerService;
-        _logger = logger;
     }
 
     // GET: Customers
     // Supports server-side paging, filtering and sorting via query string, e.g.
-    // /Customers?isActive=true&sortBy=Company&sortOrder=Descending
-    // When called via AJAX (X-Requested-With header), returns only the table+pagination partial
-    // so the modal-driven create/edit/delete flow can refresh the list without a full page reload.
     public async Task<IActionResult> Index([FromQuery] CustomerFilterDto filter, CancellationToken cancellationToken)
     {
-        PagedResult<CustomerDto> customers;
-        try
-        {
-            customers = await _customerService.GetPagedAsync(filter, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while retrieving customers");
-            TempData["Error"] = "An error occurred while loading customers.";
-            customers = PagedResult<CustomerDto>.Empty(filter.Page, filter.PageSize);
-        }
+        var customers = await _customerService.GetPagedAsync(filter, cancellationToken);
 
         var viewModel = new CustomersViewModel { Customers = customers, Filter = filter };
 
@@ -70,6 +59,7 @@ public class CustomersController : Controller
         try
         {
             var customer = await _customerService.CreateAsync(createCustomerDto, cancellationToken);
+
             return Json(new { success = true, message = "Customer created successfully!", customer });
         }
         catch (DuplicateEntityException ex)
@@ -79,11 +69,6 @@ public class CustomersController : Controller
         catch (ValidationDomaineException ex)
         {
             return UnprocessableEntity(new { errors = new Dictionary<string, string> { [ex.FieldName] = ex.Message } });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while creating customer");
-            return StatusCode(500, new { message = "An error occurred while creating the customer." });
         }
     }
 
@@ -100,6 +85,7 @@ public class CustomersController : Controller
         try
         {
             var customer = await _customerService.UpdateAsync(id, updateCustomerDto, cancellationToken);
+
             return Json(new { success = true, message = "Customer updated successfully!", customer });
         }
         catch (EntityNotFoundException)
@@ -114,11 +100,6 @@ public class CustomersController : Controller
         {
             return UnprocessableEntity(new { errors = new Dictionary<string, string> { [ex.FieldName] = ex.Message } });
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while updating customer {CustomerId}", id);
-            return StatusCode(500, new { message = "An error occurred while updating the customer." });
-        }
     }
 
     // POST: Customers/Delete/5
@@ -129,6 +110,7 @@ public class CustomersController : Controller
         try
         {
             await _customerService.DeleteAsync(id, cancellationToken);
+
             return Json(new { success = true, message = "Customer deleted successfully!" });
         }
         catch (EntityNotFoundException)
@@ -138,11 +120,6 @@ public class CustomersController : Controller
         catch (BusinessRuleViolationException ex)
         {
             return UnprocessableEntity(new { message = ex.Message });
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while deleting customer {CustomerId}", id);
-            return StatusCode(500, new { message = "An error occurred while deleting the customer." });
         }
     }
 

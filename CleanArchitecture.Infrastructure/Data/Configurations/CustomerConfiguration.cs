@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.Domain.Entities;
+using CleanArchitecture.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -36,12 +36,13 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(e => e.UpdatedBy)
             .HasMaxLength(100);
 
-        // CustomerService.ExistsByEmailAsync is a check-then-act that loses a race
-        // between concurrent creates; only the database can enforce this.
         builder.HasIndex(e => e.Email)
-            .IsUnique();
+            .IsUnique()
+            .HasDatabaseName("IX_Customers_Email");
 
-        // Seed data
+        builder.HasIndex(e => e.Name);
+
+        // Seed
         builder.HasData(
             new Customer
             {
@@ -52,7 +53,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 Company = "Northwind Traders",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = "system"
             },
             new Customer
             {
@@ -63,7 +64,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 Company = "Contoso Ltd",
                 IsActive = true,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = "system"
             },
             new Customer
             {
@@ -75,7 +76,7 @@ public class CustomerConfiguration : IEntityTypeConfiguration<Customer>
                 IsActive = false,
                 Notes = "On hold pending contract renewal.",
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = "System"
+                CreatedBy = "system"
             }
         );
     }

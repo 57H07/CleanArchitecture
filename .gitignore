@@ -54,3 +54,6 @@ Thumbs.db
 *.tmp
 *~
 *.userprefs
+
+# Editor/agent local backups
+*.bak

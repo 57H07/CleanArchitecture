@@ -11,11 +11,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // Add DbContext
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        var connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException(
+                "Connection string 'DefaultConnection' is not configured. Set it in appsettings.json or user secrets.");
 
-        // Add repositories
+        services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(connectionString));
+
         services.AddScoped<IProductRepository, ProductRepository>();
         services.AddScoped<ICustomerRepository, CustomerRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

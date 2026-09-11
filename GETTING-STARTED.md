@@ -215,7 +215,7 @@ New services go in `Application/DependencyInjection/ServiceCollectionExtensions.
 Two things that will confuse you if nobody says them out loud:
 
 - **The middleware only runs outside Development.** In Development you get `UseDeveloperExceptionPage` instead, so an exception you expect to become a clean 404 shows a stack trace while you're debugging. That's intended.
-- **The two services aren't consistent yet.** `CustomerService` throws the good `EntityNotFoundException`; `ProductService` still throws plain `KeyNotFoundException`, and `ProductsController` catches that explicitly. **Use the domain/application exceptions in new code**, and make sure a controller catches what its service actually throws.
+- **Both services throw `EntityNotFoundException`**, and both controllers catch it by type. Where one action can fail two different lookups — `ProductsController.Edit` looks up the product *and* its new owner — tell them apart with `when (ex.EntityName == ...)`, never by matching on the message text.
 
 ---
 
@@ -407,17 +407,19 @@ public class SupplierMappings : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        TypeAdapterConfig<Supplier, SupplierDto>.NewConfig();
+        config.NewConfig<Supplier, SupplierDto>();
 
         // Also the update mapping (SupplierService.UpdateAsync adapts onto the tracked
         // entity), so null must overwrite or cleared fields would keep their old value.
-        TypeAdapterConfig<CreateSupplierDto, Supplier>.NewConfig()
+        config.NewConfig<CreateSupplierDto, Supplier>()
             .IgnoreNullValues(false);
     }
 }
 ```
 
 **`IgnoreNullValues(false)` is not optional.** MVC binds an empty text input to `null`. If nulls were ignored, a user clearing the Country field would submit `null`, Mapster would skip it, and the old country would silently survive. ([More.](#scenario-e--the-update-mapping-trap))
+
+**Register through the `config` parameter**, not the static `TypeAdapterConfig<A, B>.NewConfig()`. Both compile, but the static form ignores the argument the scan just handed you and writes to global state instead — which is only ever confusing.
 
 ### Step 5 — The use case
 
@@ -505,17 +507,21 @@ public class SupplierConfiguration : IEntityTypeConfiguration<Supplier>
 
         // The service's ExistsByEmailAsync is a check-then-act that loses a race between
         // concurrent creates; only the database can actually enforce this.
-        builder.HasIndex(e => e.ContactEmail).IsUnique();
+        builder.HasIndex(e => e.ContactEmail).IsUnique().HasDatabaseName("IX_Suppliers_ContactEmail");
 
         builder.HasData(
-            new Supplier { Id = 1, Name = "Baltic Components", ContactEmail = "sales@baltic.example", LeadTimeDays = 12, IsPreferred = true, CreatedAt = DateTime.UtcNow, CreatedBy = "System" },
-            new Supplier { Id = 2, Name = "Meridian Textiles", ContactEmail = "hello@meridian.example", LeadTimeDays = 45, CreatedAt = DateTime.UtcNow, CreatedBy = "System" }
+            // Fixed timestamps, never DateTime.UtcNow: HasData feeds the migration snapshot,
+            // so a moving value makes every `migrations add` emit a spurious diff.
+            new Supplier { Id = 1, Name = "Baltic Components", ContactEmail = "sales@baltic.example", LeadTimeDays = 12, IsPreferred = true, CreatedAt = SeedData.CreatedAt, CreatedBy = SeedData.CreatedBy },
+            new Supplier { Id = 2, Name = "Meridian Textiles", ContactEmail = "hello@meridian.example", LeadTimeDays = 45, CreatedAt = SeedData.CreatedAt, CreatedBy = SeedData.CreatedBy }
         );
     }
 }
 ```
 
 **Edit** `ApplicationDbContext.cs`: `public DbSet<Supplier> Suppliers { get; set; }`
+
+Name the unique index explicitly and add it to `UnitOfWork.UniqueIndexes`, or the race it guards surfaces to the user as a 500 instead of a 409.
 
 **Create** `Infrastructure/Repositories/SupplierRepository.cs`. Most methods are one-liners over `_context.Suppliers`; the only one with real content is `GetPagedAsync`, and the thing to notice is where the query executes:
 
@@ -723,10 +729,12 @@ public class SupplierServiceTests
 ```bash
 dotnet build
 dotnet test --filter "FullyQualifiedName~SupplierServiceTests"
+
+# The schema is owned by migrations, so a new entity needs one.
+dotnet ef migrations add AddSupplier --project CleanArchitecture.Infrastructure --startup-project CleanArchitecture.Web --output-dir Data/Migrations
+
 dotnet run --project CleanArchitecture.Web
 ```
-
-**No migration step.** `Program.cs` calls `EnsureDeleted()` then `EnsureCreated()` on every start, so your table and seeds appear on the next run — and anything typed into the UI is gone on restart. That's this demo's choice, not a Clean Architecture thing.
 
 ### Checklist
 
@@ -752,6 +760,7 @@ dotnet run --project CleanArchitecture.Web
 | 7 | `Web/Views/Suppliers/Index.cshtml` | create |
 | 7 | `Web/Views/Shared/_Layout.cshtml` | edit |
 | 8 | `Application.Tests/Services/SupplierServiceTests.cs` | create |
+| 9 | `Infrastructure/Data/Migrations/*_AddSupplier.cs` | generate (`dotnet ef migrations add`) |
 
 ---
 
@@ -1026,8 +1035,6 @@ public async Task<IActionResult> Create(CreateCustomerDto createCustomerDto, Can
 
 The DTO already carries the validation attributes that drive both client-side and `ModelState` checks, so a wrapper would just forward every property. The convention: **`ViewModels/` hold list and paging shapes only.**
 
-> ⚠️ [ProductViewModel](CleanArchitecture.Web/ViewModels/ProductViewModel.cs) is a full form-ViewModel with `SelectList`s, `FormattedPrice`, breadcrumbs and so on. It shows what the pattern looks like when a form needs real UI state — but it isn't what the Product views bind to today, and its `StatusBadgeClass` still emits the retired `badge bg-*` classes. Treat it as an illustration, not the house style.
-
 #### Choosing
 
 ```
@@ -1255,7 +1262,7 @@ Every colour is a token, so the tile is dark-mode-correct with no extra work.
 
 **Motion** all lives in `utilities/_motion.scss` and is disabled under `prefers-reduced-motion`. Put new animation there, not in a component partial, so the guard keeps covering it.
 
-**Toast markup exists twice** — [_Toast.cshtml](CleanArchitecture.Web/Views/Shared/_Toast.cshtml) (server-rendered from `TempData`) and `wwwroot/js/Helpers/toast.js` (client-built for AJAX). Both emit `toast--<variant>`; **change them together.**
+**Toast markup exists twice** — [_Toast.cshtml](CleanArchitecture.Web/Views/Shared/_Toast.cshtml) (server-rendered from `TempData`) and `wwwroot/js/helpers/toast.js` (client-built for AJAX). Both emit `toast--<variant>`; **change them together.**
 
 ### Troubleshooting
 

@@ -12,9 +12,9 @@ public class ProductsViewModel
     public required ProductFilterDto Filter { get; init; }
 
     // UI dropdowns
-    public SelectList? AvailableCategories { get; set; }
-    public SelectList? AvailableStatuses { get; set; }
-    public SelectList? AvailableCustomers { get; set; }
+    public SelectList? AvailableCategories { get; init; }
+    public SelectList? AvailableStatuses { get; init; }
+    public SelectList? AvailableCustomers { get; init; }
 
     // Pagination
     public int CurrentPage => Products.PageIndex;

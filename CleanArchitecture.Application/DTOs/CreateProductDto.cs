@@ -25,6 +25,7 @@ public class CreateProductDto
     [StringLength(100, ErrorMessage = "Category cannot exceed 100 characters")]
     public string? Category { get; set; }
     
+    [Required(ErrorMessage = "Status is required")]
     [Display(Name = "Status")]
     public ProductStatus Status { get; set; } = ProductStatus.Draft;
     

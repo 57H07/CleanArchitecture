@@ -7,18 +7,7 @@
 <div class="page-head">
     <h1>@Model.Name</h1>
     <div class="d-flex align-items-center gap-2">
-        @if (!Model.IsAvailable)
-        {
-            <span class="status status-neutral">Unavailable</span>
-        }
-        else if (!Model.IsInStock)
-        {
-            <span class="status status-danger">Out of stock</span>
-        }
-        else
-        {
-            <span class="status status-positive">Available</span>
-        }
+        <partial name="~/Views/Shared/Products/_ProductStatus.cshtml" model="Model" />
     </div>
 </div>
 
@@ -37,7 +26,7 @@
                     }
                     else
                     {
-                        <span class="status status-danger">Out of stock</span>
+                        <span class="text-muted">None in stock</span>
                     }
                 </dd>
 

@@ -1,0 +1,21 @@
+@using CleanArchitecture.Domain.Enums
+@model CleanArchitecture.Application.DTOs.ProductDto
+@*
+    The single place the product status pill is rendered. Status is the source of truth;
+    stock only qualifies an otherwise-published product.
+*@
+@if (Model.Status == ProductStatus.Active && !Model.IsInStock)
+{
+    <span class="status status-danger">Out of stock</span>
+}
+else
+{
+    var variant = Model.Status switch
+    {
+        ProductStatus.Active => "status-positive",
+        ProductStatus.Draft => "status-caution",
+        _ => "status-neutral"
+    };
+
+    <span class="status @variant">@Model.Status</span>
+}

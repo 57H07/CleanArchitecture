@@ -1,18 +1,19 @@
+using System.Net;
+using System.Text.Json;
 using CleanArchitecture.Application.Exceptions;
 using CleanArchitecture.Domain.Exceptions;
 using CleanArchitecture.Web.Models;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
-using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 namespace CleanArchitecture.Web.Middleware;
 
 public class GlobalExceptionMiddleware
 {
+    private static readonly PathString ErrorRedirectPath = "/";
+
     private readonly RequestDelegate _next;
     private readonly ILogger<GlobalExceptionMiddleware> _logger;
     private readonly IHostEnvironment _environment;
-    private static readonly PathString ErrorRedirectPath = "/";
 
     public GlobalExceptionMiddleware(
         RequestDelegate next,
@@ -34,18 +35,23 @@ public class GlobalExceptionMiddleware
         {
             if (context.Response.HasStarted)
             {
-                _logger.LogError(ex, "An unhandled exception occurred");
+                _logger.LogError(ex, "An unhandled exception occurred after the response had started");
                 throw;
             }
 
-            await HandleExceptionAsync(context, ex);
+            var statusCode = GetStatusCode(ex);
+
+            if (statusCode == (int)HttpStatusCode.InternalServerError && _environment.IsDevelopment())
+            {
+                throw;
+            }
+
+            await HandleExceptionAsync(context, ex, statusCode);
         }
     }
 
-    private async Task HandleExceptionAsync(HttpContext context, Exception exception)
+    private async Task HandleExceptionAsync(HttpContext context, Exception exception, int statusCode)
     {
-        int statusCode = GetStatusCode(exception);
-
         if (statusCode == (int)HttpStatusCode.InternalServerError)
         {
             _logger.LogError(
@@ -67,7 +73,7 @@ public class GlobalExceptionMiddleware
         context.Response.Clear();
         context.Response.StatusCode = statusCode;
 
-        string message = GetUserMessage(exception, statusCode);
+        var message = GetUserMessage(exception, statusCode);
 
         if (ExpectsJson(context))
         {
@@ -86,8 +92,7 @@ public class GlobalExceptionMiddleware
             return;
         }
 
-        Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory? factory = context.RequestServices
-            .GetService<Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory>();
+        var factory = context.RequestServices.GetService<ITempDataDictionaryFactory>();
         if (factory != null)
         {
             var tempData = factory.GetTempData(context);
@@ -103,7 +108,6 @@ public class GlobalExceptionMiddleware
 
         if (context.Request.Path.Equals(ErrorRedirectPath, StringComparison.OrdinalIgnoreCase))
         {
-            context.Response.StatusCode = statusCode;
             await context.Response.WriteAsync(message);
             return;
         }
@@ -114,9 +118,11 @@ public class GlobalExceptionMiddleware
     private static bool ExpectsJson(HttpContext context)
     {
         if (context.Request.Headers.XRequestedWith == "XMLHttpRequest")
+        {
             return true;
+        }
 
-        string? accept = context.Request.Headers.Accept.ToString();
+        var accept = context.Request.Headers.Accept.ToString();
 
         return !string.IsNullOrEmpty(accept)
             && accept.Contains("application/json", StringComparison.OrdinalIgnoreCase)
@@ -125,13 +131,14 @@ public class GlobalExceptionMiddleware
 
     private static int GetStatusCode(Exception exception) => exception switch
     {
-        CleanArchitecture.Domain.Exceptions.RessourceNotFoundException => (int)HttpStatusCode.NotFound,
-        CleanArchitecture.Domain.Exceptions.InsufficientRightsException => (int)HttpStatusCode.Forbidden,
+        RessourceNotFoundException => (int)HttpStatusCode.NotFound,
+        InsufficientRightsException => (int)HttpStatusCode.Forbidden,
         UnauthorizedAccessException => (int)HttpStatusCode.Unauthorized,
         ValidationDomaineException => (int)HttpStatusCode.UnprocessableEntity,
         DuplicateEntityException => (int)HttpStatusCode.Conflict,
         BusinessRuleViolationException => (int)HttpStatusCode.UnprocessableEntity,
         DomainException => (int)HttpStatusCode.UnprocessableEntity,
+        OperationCanceledException => StatusCodes.Status499ClientClosedRequest,
         _ => (int)HttpStatusCode.InternalServerError
     };
 

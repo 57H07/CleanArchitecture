@@ -1,4 +1,4 @@
-﻿using CleanArchitecture.Application.DTOs;
+using CleanArchitecture.Application.DTOs;
 using CleanArchitecture.Domain.Entities;
 using Mapster;
 
@@ -8,11 +8,9 @@ public class CustomerMappings : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        TypeAdapterConfig<Customer, CustomerDto>.NewConfig();
+        config.NewConfig<Customer, CustomerDto>();
 
-        // Also the update mapping (CustomerService.UpdateAsync adapts onto the tracked
-        // entity), so null must overwrite or cleared fields would keep their old value.
-        TypeAdapterConfig<CreateCustomerDto, Customer>.NewConfig()
+        config.NewConfig<CreateCustomerDto, Customer>()
             .IgnoreNullValues(false);
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using CleanArchitecture.Application.Interfaces.Collections;
 
 namespace CleanArchitecture.Infrastructure.Collections
@@ -44,14 +44,6 @@ namespace CleanArchitecture.Infrastructure.Collections
                 .ToListAsync(cancellationToken);
 
             return new PaginatedList<T>(items, count, pageIndex, pageSize);
-        }
-
-        public static PaginatedList<T> FromMaterialized(IReadOnlyList<T> items, int totalCount, int pageIndex, int pageSize)
-        {
-            ArgumentOutOfRangeException.ThrowIfLessThan(pageIndex, 1);
-            ArgumentOutOfRangeException.ThrowIfLessThan(pageSize, 1);
-
-            return new PaginatedList<T>(items, totalCount, pageIndex, pageSize);
         }
     }
 }

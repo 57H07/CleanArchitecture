@@ -117,18 +117,7 @@
                             <td class="num">@product.StockQuantity</td>
                             <td>@product.CustomerName</td>
                             <td>
-                                @if (!product.IsAvailable)
-                                {
-                                    <span class="status status-neutral">Unavailable</span>
-                                }
-                                else if (!product.IsInStock)
-                                {
-                                    <span class="status status-danger">Out of stock</span>
-                                }
-                                else
-                                {
-                                    <span class="status status-positive">Available</span>
-                                }
+                                <partial name="~/Views/Shared/Products/_ProductStatus.cshtml" model="product" />
                             </td>
                             <td class="num">@product.CreatedAt.ToString("dd MMM yyyy")</td>
                             <td>

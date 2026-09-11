@@ -18,7 +18,6 @@ public static class TestDataBuilder
             StockQuantity = 10,
             Category = "Test Category",
             Status = ProductStatus.Active,
-            IsAvailable = true,
             CustomerId = customerId,
             CreatedAt = DateTime.UtcNow,
             CreatedBy = "Test"
@@ -44,6 +43,7 @@ public static class TestDataBuilder
             Price = 99.99m,
             StockQuantity = 10,
             Category = "Test Category",
+            Status = ProductStatus.Active,
             CustomerId = customerId
         };
     }
@@ -52,7 +52,6 @@ public static class TestDataBuilder
     {
         var product = CreateValidProduct(id, customerId);
         product.Status = ProductStatus.Inactive;
-        product.IsAvailable = false;
         return product;
     }
 
@@ -60,7 +59,6 @@ public static class TestDataBuilder
     {
         var product = CreateValidProduct(id, customerId);
         product.StockQuantity = 0;
-        product.IsAvailable = false;
         return product;
     }
 

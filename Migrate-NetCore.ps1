@@ -5,7 +5,9 @@
 .DESCRIPTION
     Run this script from the solution root (where the .sln lives).
     It detects the current target framework(s), asks which version to
-    migrate to, updates all .csproj TFMs and global.json, cleans build
+    migrate to, updates the TFM and package versions (in Directory.*.props when
+    central package management is in use, otherwise in each .csproj), updates
+    global.json, cleans build
     artifacts, updates NuGet packages and rebuilds the solution.
 
 .NOTES
@@ -84,11 +86,20 @@ Write-Step "Detecting current target framework(s)"
 $projects = Get-ChildItem -Path $root -Recurse -Include *.csproj, *.vbproj, *.fsproj -File `
             | Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' }
 
-if ($projects.Count -eq 0) { throw "No project files (.csproj/.vbproj/.fsproj) found under $root." }
+# This solution uses central package management and shared MSBuild properties, so the
+# TargetFramework and the package versions live in Directory.*.props, not in any csproj.
+# They are edited exactly like a project file, so just add them to the same list.
+$sharedProps = Get-ChildItem -Path $root -Recurse -Include Directory.Build.props, Directory.Packages.props -File `
+               | Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' }
+
+$projects = @($projects) + @($sharedProps)
+
+if ($projects.Count -eq 0) { throw "No project files (.csproj/.vbproj/.fsproj/Directory.*.props) found under $root." }
 
 $tfmRegex   = '<TargetFramework>\s*net(\d+)\.0\s*</TargetFramework>'
 $tfmsRegex  = '<TargetFrameworks>\s*([^<]+?)\s*</TargetFrameworks>'
 $detected   = @{}   # major version number -> count
+$tfmless    = @()   # files with no TFM of their own; expected under Directory.Build.props
 
 foreach ($proj in $projects) {
     $content = Get-Content $proj.FullName -Raw
@@ -106,11 +117,18 @@ foreach ($proj in $projects) {
         }
     }
     else {
-        Write-Warn "$($proj.Name): no net#.0 TFM detected (maybe SDK-style multi-target or non-.NET)."
+        # Not necessarily a problem: with a shared Directory.Build.props, no csproj carries a
+        # TFM of its own. Collect these and only complain if nothing declared one anywhere.
+        $tfmless += $proj.Name
     }
 }
 
-if ($detected.Count -eq 0) { throw "Could not detect any current .NET version." }
+if ($detected.Count -eq 0) {
+    foreach ($name in $tfmless) {
+        Write-Warn "${name}: no net#.0 TFM detected (maybe SDK-style multi-target or non-.NET)."
+    }
+    throw "Could not detect any current .NET version."
+}
 
 $currentMajor = ($detected.Keys | Measure-Object -Maximum).Maximum
 Write-Ok ("Current version detected: net{0}.0" -f $currentMajor)
@@ -254,7 +272,9 @@ if (-not $SkipPackages) {
             Write-Step "Auto-updating $scope to their latest versions"
 
             $bumped = 0
-            $pkgRefRegex = '<PackageReference\s+Include="([^"]+)"\s+Version="([^"]+)"\s*/?>'
+            # PackageReference carries the version in a plain csproj; under central package
+                    # management it lives on PackageVersion in Directory.Packages.props.
+                    $pkgRefRegex = '<Package(?:Reference|Version)\s+Include="([^"]+)"\s+Version="([^"]+)"\s*/?>'
 
             foreach ($proj in $projects) {
                 $content = Get-Content $proj.FullName -Raw

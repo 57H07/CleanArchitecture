@@ -25,12 +25,13 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<IEnumerable<Customer>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.Customers.ToListAsync(cancellationToken);
+        return await _context.Customers.AsNoTracking().ToListAsync(cancellationToken);
     }
 
     public async Task<IEnumerable<Customer>> GetActiveCustomersAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Customers
+            .AsNoTracking()
             .Where(c => c.IsActive)
             .OrderBy(c => c.Name)
             .ToListAsync(cancellationToken);
@@ -38,7 +39,7 @@ public class CustomerRepository : ICustomerRepository
 
     public async Task<IPaginatedList<Customer>> GetPagedAsync(CustomerFilterDto filter, CancellationToken cancellationToken = default)
     {
-        var query = _context.Customers.AsQueryable();
+        var query = _context.Customers.AsNoTracking().AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
         {
