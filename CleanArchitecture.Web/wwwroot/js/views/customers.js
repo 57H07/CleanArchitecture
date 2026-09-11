@@ -1,6 +1,6 @@
-import Ajax from "../../helpers/ajax.js";
-import Toast from "../../helpers/toast.js";
-import Tooltip from "../../helpers/tooltip.js";
+import Ajax from "../helpers/ajax.js";
+import Toast from "../helpers/toast.js";
+import Tooltip from "../helpers/tooltip.js";
 
 const tableContainer = document.getElementById("customerTableWrapper");
 const filterForm = document.getElementById("customerFilterForm");
