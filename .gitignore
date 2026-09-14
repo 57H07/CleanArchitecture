@@ -34,6 +34,7 @@
 # NuGet v3
 project.lock.json
 project.assets.json
+NuGet.config
 
 ## Entity Framework Migrations
 **/Migrations/
